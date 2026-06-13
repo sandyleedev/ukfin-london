@@ -95,7 +95,6 @@ function ClusterDrawer({ cluster, onClose }) {
             <Metric label="Category" value={cluster.category} />
             <Metric label="Cases" value={cluster.cases.toLocaleString()} />
             <Metric label="7-day growth" value={<GrowthPill value={cluster.growth_7d} />} />
-            <Metric label="AI confidence" value={`${cluster.ai_confidence}%`} />
             <Metric label="Priority" value={`${cluster.priority_pct}% (rank ${cluster.rank})`} />
             <Metric label="Reg. relevance" value={cluster.regulatory_relevance} />
             <Metric label="First seen" value={fmtTime(cluster.first_seen)} />

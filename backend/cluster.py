@@ -15,8 +15,8 @@ Method (chosen for regulator-facing interpretability):
      small candidate range, so we don't hand-pick the number of patterns.
   3. Small categories (below the clustering floor) become a single cluster.
   4. Each cluster is auto-labelled from its top TF-IDF terms and tagged with
-     real metrics: case count, member companies, AI confidence, first/last
-     activity, and 7-day growth computed from actual date_received timestamps.
+     real metrics: case count, member companies, first/last activity, and
+     7-day growth computed from actual date_received timestamps.
 
 The output feeds scoring.py (priority ranking + alerts + trend).
 """
@@ -115,12 +115,20 @@ def _growth_7d(dates: List[datetime], as_of: datetime) -> float:
     last7 = sum(1 for d in dates if d and (as_of - d).days < 7)
     prev7 = sum(1 for d in dates if d and 7 <= (as_of - d).days < 14)
     if prev7 == 0:
-        return 100.0 * last7 if last7 else 0.0  # all-new growth
+        # No prior-week baseline: all activity is new. Report a fixed +100%
+        # ("all new") rather than scaling by count — the old `100 * last7`
+        # turned a single new complaint into a misleading +500% spike.
+        return 100.0 if last7 else 0.0
     return round((last7 - prev7) / prev7 * 100.0, 1)
 
 
-def _daily_counts(dates: List[datetime], as_of: datetime, window: int = 18) -> List[int]:
-    """Per-day case counts over the trailing `window` days (oldest→newest), for sparklines."""
+def _daily_counts(dates: List[datetime], as_of: datetime, window: int = 90) -> List[int]:
+    """Per-day case counts over the trailing `window` days (oldest→newest).
+
+    Feeds the dashboard's alert-volume trend (scoring.build_trend), so the
+    window here must match build_trend's. 90 days surfaces a few months of
+    history once a multi-month crawl is in place.
+    """
     buckets = [0] * window
     for d in dates:
         if not d:
@@ -206,8 +214,6 @@ def build_clusters(df: pd.DataFrame) -> List[Dict]:
             dates = [d for d in members["_dt"].tolist() if d is not None]
             companies = [c for c in members["company"].tolist() if c]
             comp_counts = Counter(companies).most_common(3)
-            conf = members.get("confidence")
-            ai_conf = round(float(conf.mean()) * 100) if conf is not None and len(conf) else 0
             issue_hint = (members["issue"].mode().iloc[0]
                           if "issue" in members and not members["issue"].mode().empty else "")
 
@@ -222,7 +228,6 @@ def build_clusters(df: pd.DataFrame) -> List[Dict]:
                 "category": category,
                 "cases": int(len(members)),
                 "companies": [c for c, _ in comp_counts],
-                "ai_confidence": ai_conf,
                 "growth_7d": _growth_7d(dates, as_of),
                 "first_seen": min(dates).isoformat() if dates else None,
                 "last_activity": max(dates).isoformat() if dates else None,

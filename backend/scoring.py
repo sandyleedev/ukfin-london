@@ -10,11 +10,15 @@ regulator can inspect and re-tune), combining the dimensions from the workflow:
              + w_sev  · severity         (how bad the harm is)
              + w_grow · growth           (how fast it's accelerating — catch it early)
              + w_reg  · regulatory_relevance  (how much it matters to the FCA's remit)
-             + w_ai   · ai_confidence     (how sure we are it's AI/automation-driven)
 
 All dimensions are normalised to [0,1] before weighting, so the weights are
 directly comparable. Defaults below are the "typical" starting weights; expose
 them in the API so the regulator can adjust the balance.
+
+Note: every cluster reaching this stage has already been confirmed
+AI/automation-related by Stages 1–2, so "AI confidence" is not a priority
+dimension — it would only ask "how AI is this already-AI cluster?" and double-
+count signals that already feed severity.
 """
 
 import logging
@@ -25,12 +29,16 @@ logger = logging.getLogger("scoring")
 
 # Typical starting weights (sum = 1.0). Tunable.
 DEFAULT_WEIGHTS = {
-    "frequency": 0.25,
-    "severity": 0.30,
-    "growth": 0.20,
-    "regulatory_relevance": 0.15,
-    "ai_confidence": 0.10,
+    "frequency": 0.28,
+    "severity": 0.33,
+    "growth": 0.22,
+    "regulatory_relevance": 0.17,
 }
+
+# Minimum cases before a cluster can raise a spike/escalation/triage alert, so a
+# single brand-new complaint (growth_7d = +100% "all new") can't masquerade as a
+# critical spike.
+MIN_ALERT_CASES = 5
 
 # Regulatory-relevance prior by category: where consumer detriment is most
 # acute / most central to FCA conduct supervision. 0..1.
@@ -59,20 +67,19 @@ SEVERITY_BANDS = [
 
 def _severity_score(cluster: Dict, max_cases: int) -> float:
     """
-    Composite severity in [0,1]: harm signals + scale + AI confidence + growth.
+    Composite severity in [0,1]: harm signals + scale + growth.
     Implied no-human / unexplained-denial signals raise severity (the consumer
     can't get recourse), as does a large or fast-growing cluster.
     """
     cases_norm = cluster["cases"] / max_cases if max_cases else 0.0
     growth_norm = min(max(cluster["growth_7d"], 0) / 200.0, 1.0)  # +200% ⇒ 1.0
-    ai_norm = cluster["ai_confidence"] / 100.0
     # Harmful implied signals indicate the consumer is stuck with no recourse.
     severe_signals = {"no_human", "no_explanation", "action_without_notice"}
     sig_hits = len(set(cluster.get("matched_signals", [])) & severe_signals)
     sig_norm = min(sig_hits / 3.0, 1.0)
 
     return round(
-        0.35 * cases_norm + 0.25 * growth_norm + 0.20 * ai_norm + 0.20 * sig_norm,
+        0.44 * cases_norm + 0.31 * growth_norm + 0.25 * sig_norm,
         3,
     )
 
@@ -121,14 +128,12 @@ def score_clusters(clusters: List[Dict], weights: Dict = None) -> List[Dict]:
         freq_norm = c["cases"] / max_cases if max_cases else 0.0
         growth_norm = min(max(c["growth_7d"], 0) / max_growth, 1.0)
         reg = REG_RELEVANCE.get(c["category"], 0.5)
-        ai_norm = c["ai_confidence"] / 100.0
 
         priority = (
             w["frequency"] * freq_norm
             + w["severity"] * sev
             + w["growth"] * growth_norm
             + w["regulatory_relevance"] * reg
-            + w["ai_confidence"] * ai_norm
         )
         c["severity"] = sev
         c["severity_band"] = _severity_band(sev)
@@ -160,11 +165,11 @@ def build_alerts(clusters: List[Dict]) -> List[Dict]:
         band = c.get("severity_band", "MEDIUM")
         g = c["growth_7d"]
 
-        if g >= 100:
+        if g >= 100 and c["cases"] >= MIN_ALERT_CASES:
             alerts.append(_alert(ts, "CRITICAL", "SPIKE",
                                  f"CRITICAL SPIKE: +{g:.0f}% case volume in 7 days — "
                                  f"{c['name']}", c["id"]))
-        elif c["status"] == "ESCALATING":
+        elif c["status"] == "ESCALATING" and c["cases"] >= MIN_ALERT_CASES:
             alerts.append(_alert(ts, band, "ESCALATING",
                                  f"ESCALATING: {c['name']} growing at +{g:.0f}% / 7d",
                                  c["id"]))
@@ -180,8 +185,8 @@ def build_alerts(clusters: List[Dict]) -> List[Dict]:
                 alerts.append(_alert(ts, band, "NEW CLUSTER",
                                      f"NEW CLUSTER: {c['name']} pattern detected",
                                      c["id"]))
-        # Triage flag for high-confidence, severe clusters needing human review.
-        if c.get("ai_confidence", 0) >= 80 and band in ("CRITICAL", "HIGH"):
+        # Triage flag for severe clusters with enough volume to warrant a human.
+        if band in ("CRITICAL", "HIGH") and c["cases"] >= MIN_ALERT_CASES:
             alerts.append(_alert(ts, band, "TRIAGE FLAG",
                                  f"TRIAGE FLAG: {c['cases']} cases routed to human "
                                  f"review — {c['name']}", c["id"]))
@@ -206,7 +211,7 @@ def _alert(ts, severity, kind, message, cluster_id):
 # Alert-volume trend (stacked-by-severity time series)
 # ---------------------------------------------------------------------------
 
-def build_trend(clusters: List[Dict], window: int = 18) -> List[Dict]:
+def build_trend(clusters: List[Dict], window: int = 90) -> List[Dict]:
     """
     Build a per-day stacked time series of case volume split by the severity
     band of the originating cluster, over the trailing `window` days. Drives the

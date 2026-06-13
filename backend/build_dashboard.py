@@ -16,7 +16,7 @@ Run:
 
 Env:
     REFRESH=1            force a fresh CFPB crawl instead of using output/raw_cache.json
-    YEARS_BACK=3         crawl depth (default 3)
+    MONTHS_BACK=6        crawl depth in months (default 6)
     ADJUDICATE_BACKEND   auto|llm|score (default auto → llm if ANTHROPIC_API_KEY else score)
     ADJUDICATE_MAX       cap LLM calls (0 = no cap)
 """
@@ -40,7 +40,7 @@ RAW_CACHE = os.path.join(OUTPUT_DIR, "raw_cache.json")
 DASHBOARD_PATH = os.path.join(OUTPUT_DIR, "dashboard.json")
 
 USE_CACHE = os.environ.get("REFRESH", "0") != "1"
-YEARS_BACK = int(os.environ.get("YEARS_BACK", "3"))
+MONTHS_BACK = int(os.environ.get("MONTHS_BACK", "6"))
 ADJUDICATE_BACKEND = os.environ.get("ADJUDICATE_BACKEND", "auto")
 ADJUDICATE_MAX = int(os.environ.get("ADJUDICATE_MAX", "0"))
 # Stage 5 supervisory assessment backend + cap (LLM is per-cluster).
@@ -58,7 +58,7 @@ def _load_or_fetch():
         if cached:
             print(f"♻️  Loaded {len(cached):,} records from cache")
             return cached
-    data = cfpb_client.fetch_complaints(years_back=YEARS_BACK)
+    data = cfpb_client.fetch_complaints(months_back=MONTHS_BACK)
     cfpb_client.save_raw_cache(data, RAW_CACHE)
     return data
 

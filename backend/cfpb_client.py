@@ -5,10 +5,11 @@ Fetches consumer complaints from the CFPB Consumer Complaint Database (CCDB)
 public API: https://cfpb.github.io/api/ccdb/api.html
 
 Design decisions:
-- We pull the last 3 years of data. The CCDB API caps a single response at
-  `size` records and uses a `from` offset for pagination, but very wide date
-  ranges can time out or silently truncate. To stay well under any practical
-  limit we *chunk the request by calendar month* and paginate within each month.
+- We pull the last few months of data (default 6 — see MONTHS_BACK). The CCDB
+  API caps a single response at `size` records and uses a `from` offset for
+  pagination, but very wide date ranges can time out or silently truncate, and
+  older complete months run to ~100k+ narratives each. To stay tractable we
+  *chunk the request by calendar month* and paginate within each month.
 - Network calls are wrapped with tenacity-based retries (exponential backoff)
   so transient timeouts / 5xx errors don't kill a multi-month crawl.
 - Only the fields we actually need downstream are retained, keeping the cache
@@ -38,8 +39,11 @@ from tenacity import (
 # documented in the CCDB API and returns Elasticsearch-style hits.
 CFPB_API_URL = "https://www.consumerfinance.gov/data-research/consumer-complaints/search/api/v1/"
 
-# How far back to crawl. 3 years per the spec.
-YEARS_BACK = 3
+# How far back to crawl, in calendar months. Six months gives enough history
+# for the >30-day signals (PERSISTENT status, growth baselines, the trend
+# chart) while keeping the crawl tractable — older complete months are large
+# (~100k+ narratives each), so a multi-year pull is impractical here.
+MONTHS_BACK = 6
 
 # Page size per request. 1000 is the documented practical maximum.
 PAGE_SIZE = 1000
@@ -180,10 +184,10 @@ def _month_ranges(start: date, end: date) -> List[tuple]:
 # Public fetch API
 # ---------------------------------------------------------------------------
 
-def fetch_complaints(years_back: int = YEARS_BACK,
+def fetch_complaints(months_back: int = MONTHS_BACK,
                      narrative_only: bool = True) -> List[Dict]:
     """
-    Fetch the last `years_back` years of complaints, chunked by calendar month.
+    Fetch the last `months_back` months of complaints, chunked by calendar month.
 
     IMPORTANT — how this endpoint actually behaves:
     The CCDB v1 search API with `format=json` returns a *flat JSON list* of
@@ -204,7 +208,7 @@ def fetch_complaints(years_back: int = YEARS_BACK,
     Returns a flat list of trimmed complaint dicts (see KEEP_FIELDS).
     """
     end = date.today()
-    start = end - relativedelta(years=years_back)
+    start = end - relativedelta(months=months_back)
 
     month_windows = _month_ranges(start, end)
     logger.info(
@@ -284,7 +288,7 @@ def load_raw_cache(filepath: str) -> List[Dict]:
 if __name__ == "__main__":
     # Quick manual smoke test: fetch a small slice and print a sample.
     logging.basicConfig(level=logging.INFO, format="%(message)s")
-    sample = fetch_complaints(years_back=1)
+    sample = fetch_complaints(months_back=1)
     print(f"Fetched {len(sample)} complaints")
     if sample:
         print(json.dumps(sample[0], indent=2))

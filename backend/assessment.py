@@ -133,7 +133,6 @@ def _ctx_text(cluster: Dict) -> str:
 def _ai_rationale(cluster: Dict) -> str:
     kws = cluster.get("matched_keywords") or []
     sigs = cluster.get("matched_signals") or []
-    conf = cluster.get("ai_confidence", 0)
     bits = []
     if kws:
         bits.append(f"complaints explicitly reference automation ({', '.join(kws[:4])})")
@@ -147,7 +146,7 @@ def _ai_rationale(cluster: Dict) -> str:
         bits.append("the harm fingerprint of automated decisioning ("
                     + ", ".join(readable.get(s, s) for s in sigs[:4]) + ")")
     base = "; and ".join(bits) if bits else "recurring patterns consistent with automated handling"
-    return (f"Flagged AI/automation-related (confidence {conf}%) because {base}. "
+    return (f"Flagged AI/automation-related because {base}. "
             f"The pattern is concentrated and repeating across {cluster.get('cases', 0)} "
             f"complaints, which is more consistent with a systematic automated process "
             f"than with isolated human error.")
@@ -186,7 +185,12 @@ def _consumer_duty(cluster: Dict) -> List[Dict]:
 def _hypotheses(cluster: Dict) -> List[Dict]:
     cat = cluster.get("category", "Other")
     ctx = _ctx_text(cluster)
-    ai_norm = cluster.get("ai_confidence", 0) / 100.0
+    # Strength of the automation evidence, in [0,1]: how many distinct implied
+    # signals / explicit keywords the cluster carries. Replaces the old
+    # ai_confidence lift (every cluster here is already confirmed AI-related).
+    n_sig = len(cluster.get("matched_signals") or [])
+    n_kw = 1 if (cluster.get("matched_keywords") or []) else 0
+    sig_strength = min(n_sig + n_kw, 4) / 4.0
     templates = CATEGORY_MECHANISMS.get(cat, [(
         "A recently deployed or changed automated decisioning process appears to "
         "be producing the recurring detriment seen in these complaints.",
@@ -195,12 +199,11 @@ def _hypotheses(cluster: Dict) -> List[Dict]:
     out = []
     for mech, base, ev_hint, ctx_kw in templates:
         support = sum(1 for k in ctx_kw if k in ctx)
-        # Likelihood: base, lifted by AI confidence and contextual support, capped <1.
-        lk = base + 0.25 * ai_norm + min(support, 3) * 0.05
+        # Likelihood: base, lifted by evidence strength and contextual support, capped <1.
+        lk = base + 0.25 * sig_strength + min(support, 3) * 0.05
         lk = round(min(lk, 0.9), 2)
         firms = ", ".join((cluster.get("companies") or [])[:3]) or "the affected firms"
         evidence = (f"{cluster.get('cases', 0)} complaints showing {ev_hint}; "
-                    f"AI-relatedness {cluster.get('ai_confidence', 0)}%; "
                     f"concentrated at {firms}.")
         out.append({"mechanism": mech, "likelihood": lk, "evidence": evidence})
 
@@ -210,7 +213,7 @@ def _hypotheses(cluster: Dict) -> List[Dict]:
             "mechanism": "If the automated model relies on variables that act as "
                          "proxies for protected characteristics (e.g. postcode, name), "
                          "outcomes may be indirectly discriminatory even without intent.",
-            "likelihood": round(min(0.35 + 0.2 * ai_norm, 0.6), 2),
+            "likelihood": round(min(0.35 + 0.2 * sig_strength, 0.6), 2),
             "evidence": "Category is exposed to proxy-based discrimination; decisions "
                         "issued without reasons make disparate impact hard to detect.",
         })
@@ -327,7 +330,7 @@ def _assess_llm(cluster: Dict) -> Dict:
         f"Cluster: {cluster.get('name')}\n"
         f"Category: {cluster.get('category')}\n"
         f"Cases: {cluster.get('cases')} | Severity: {cluster.get('severity_band')} | "
-        f"7d growth: {cluster.get('growth_7d')}% | AI confidence: {cluster.get('ai_confidence')}%\n"
+        f"7d growth: {cluster.get('growth_7d')}%\n"
         f"Firms: {', '.join(cluster.get('companies') or [])}\n"
         f"Explicit keywords: {', '.join(cluster.get('matched_keywords') or []) or '(none)'}\n"
         f"Implied signals: {', '.join(cluster.get('matched_signals') or []) or '(none)'}\n\n"
@@ -397,7 +400,7 @@ if __name__ == "__main__":
     demo = {
         "id": "CL-007", "name": "Cards & Payments — Closing your account",
         "category": "Cards & Payments", "cases": 29, "severity_band": "CRITICAL",
-        "growth_7d": 200, "ai_confidence": 65, "companies": ["Citibank", "Synchrony"],
+        "growth_7d": 200, "companies": ["Citibank", "Synchrony"],
         "matched_keywords": ["automated system"],
         "matched_signals": ["no_human", "no_explanation", "action_without_notice"],
         "sample_narratives": ["My account was closed with no explanation and I could "

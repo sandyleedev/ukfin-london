@@ -2,7 +2,7 @@ import { Panel, SeverityBadge, StatusBadge, GrowthPill, fmtTime } from "../ui.js
 
 // Full "Identified Clusters" table (bottom of the reference layout).
 export default function ClusterTable({ clusters, selectedId, onSelect }) {
-  const cols = ["Cluster Name", "Category", "Cases", "7d Growth", "Severity", "Status", "AI Conf.", "Last Activity"];
+  const cols = ["Cluster Name", "Category", "Cases", "7d Growth", "Severity", "Status", "Last Activity"];
   return (
     <Panel title="Identified Clusters" subtitle={`${clusters.length} active`} className="h-full">
       <table className="w-full text-left border-collapse">
@@ -33,14 +33,6 @@ export default function ClusterTable({ clusters, selectedId, onSelect }) {
                 <td className="px-4 py-2.5"><GrowthPill value={c.growth_7d} /></td>
                 <td className="px-4 py-2.5"><SeverityBadge band={c.severity_band} /></td>
                 <td className="px-4 py-2.5"><StatusBadge status={c.status} /></td>
-                <td className="px-4 py-2.5">
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-10 h-1 bg-line rounded-full overflow-hidden">
-                      <div className="h-full bg-accent" style={{ width: `${c.ai_confidence}%` }} />
-                    </div>
-                    <span className="font-mono text-[11px] text-muted">{c.ai_confidence}%</span>
-                  </div>
-                </td>
                 <td className="px-4 py-2.5 text-muted whitespace-nowrap">{fmtTime(c.last_activity)}</td>
               </tr>
             );
