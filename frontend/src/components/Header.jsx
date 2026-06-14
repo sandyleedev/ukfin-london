@@ -20,7 +20,6 @@ export default function Header({ generatedAt, adjudicator, onOverview }) {
       </span>
 
       <div className="ml-auto flex items-center gap-4 text-sm text-muted">
-        <span className="capitalize">{adjudicator || "—"}</span>
         <span className="text-white/10">|</span>
         <span>{date}</span>
       </div>
