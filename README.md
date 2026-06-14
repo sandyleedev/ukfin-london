@@ -26,7 +26,7 @@ chosen by silhouette). Random forest is supervised and would need labels we
 don't have.
 
 **Priority score** (transparent, tunable weights):
-`0.25·frequency + 0.30·severity + 0.20·growth + 0.15·regulatory_relevance + 0.10·AI_confidence`.
+`0.28·frequency + 0.33·severity + 0.22·growth + 0.17·regulatory_relevance`.
 
 ## Layout
 
@@ -40,7 +40,7 @@ Sentinel/
 │   ├── scoring.py            Stage 4: priority, severity, alerts, trend
 │   ├── build_dashboard.py    orchestrator → output/dashboard.json
 │   ├── api.py                FastAPI serving the dashboard
-│   └── output/               raw_cache.json, dashboard.json
+│   └── output/               dashboard.json  (raw_cache.json is gitignored — see below)
 └── frontend/       Vite + React + Tailwind + recharts dashboard
 ```
 
@@ -50,9 +50,20 @@ Sentinel/
 ```bash
 cd backend
 pip install -r requirements.txt
-python build_dashboard.py            # builds output/dashboard.json from the cached CFPB data
+
+# First run: crawl 6 months of real CFPB data (~2 min, ~127k complaints)
+REFRESH=1 python build_dashboard.py
+
+# Subsequent runs: uses the local cache (fast, no network)
+python build_dashboard.py
+
 uvicorn api:app --reload --port 8050
 ```
+
+> **Why is `raw_cache.json` missing?**  
+> The raw CFPB crawl cache is `~200 MB` — over GitHub's 100 MB file limit — so it is
+> gitignored and not committed. Run `REFRESH=1 python build_dashboard.py` once to
+> fetch it locally; all subsequent runs use the cached version automatically.
 
 **Frontend** (port 5173):
 ```bash
@@ -66,11 +77,8 @@ npm run dev          # open http://localhost:5173
 | Env var | Effect |
 |---|---|
 | `REFRESH=1` | force a fresh CFPB crawl instead of using `output/raw_cache.json` |
-| `YEARS_BACK=3` | crawl depth (default 3 years) |
+| `MONTHS_BACK=6` | crawl depth in months (default 6) |
 | `ADJUDICATE_BACKEND=llm\|score\|auto` | Stage 2 backend (`auto` = LLM if `ANTHROPIC_API_KEY` set, else deterministic score) |
 | `ANTHROPIC_API_KEY=...` | enables the Claude adjudicator (best recall on implied-automation cases) |
 | `ADJUDICATE_MAX=50` | cap LLM calls (cost control) |
 | `REGUTRIAGE_LLM_MODEL=claude-haiku-4-5` | cheaper/faster adjudication model (default `claude-opus-4-8`) |
-
-The bundled `output/raw_cache.json` holds ~2 months of real CFPB complaints so the
-demo runs offline. For the full picture run `REFRESH=1 YEARS_BACK=3 python build_dashboard.py`.
