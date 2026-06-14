@@ -10,6 +10,7 @@ import TrendChart from "./components/TrendChart.jsx";
 import ClusterTable from "./components/ClusterTable.jsx";
 import Assessment from "./components/Assessment.jsx";
 import LandingPage from "./components/LandingPage.jsx";
+import ErrorBoundary from "./components/ErrorBoundary.jsx";
 
 export default function App() {
   const [data, setData] = useState(null);
@@ -97,41 +98,51 @@ export default function App() {
           <Header generatedAt={data.generated_at} adjudicator={data.adjudicator} onOverview={() => setStarted(false)} />
 
           <main className="flex-1 overflow-auto no-scrollbar p-6 space-y-6 animate-fade-in">
-            <KpiStrip kpis={data.kpis} onKpiClick={handleKpiClick} />
+            <ErrorBoundary>
+              <KpiStrip kpis={data.kpis} onKpiClick={handleKpiClick} />
+            </ErrorBoundary>
 
             {/* Row 1: Alerts & Cluster Rankings side-by-side */}
             <div className="grid grid-cols-12 gap-6">
               <div className="col-span-12 lg:col-span-6 animate-fade-in" style={{ height: "560px" }}>
-                <ClusterRankings clusters={data.clusters} selectedId={selectedId} onSelect={setSelectedId} />
+                <ErrorBoundary>
+                  <ClusterRankings clusters={data.clusters} selectedId={selectedId} onSelect={setSelectedId} />
+                </ErrorBoundary>
               </div>
               <div className="col-span-12 lg:col-span-6 animate-fade-in" style={{ height: "560px" }}>
-                <LiveAlerts alerts={data.alerts} />
+                <ErrorBoundary>
+                  <LiveAlerts alerts={data.alerts} />
+                </ErrorBoundary>
               </div>
             </div>
 
             {/* Row 2: Alert Volume Trend (occupies full row, above ClusterTable) */}
             <div className="grid grid-cols-12 gap-6">
               <div id="trend-chart" className="col-span-12 animate-fade-in" style={{ height: "400px" }}>
-                <TrendChart trend={data.trend} />
+                <ErrorBoundary>
+                  <TrendChart trend={data.trend} />
+                </ErrorBoundary>
               </div>
             </div>
 
             {/* Row 3: Identified Clusters (occupies full row) */}
             <div className="grid grid-cols-12 gap-6">
               <div id="cluster-table" className="col-span-12 min-h-0 animate-fade-in">
-                <ClusterTable
-                  clusters={data.clusters}
-                  selectedId={selectedId}
-                  onSelect={setSelectedId}
-                  search={search}
-                  setSearch={setSearch}
-                  selectedCategory={selectedCategory}
-                  setSelectedCategory={setSelectedCategory}
-                  selectedSeverity={selectedSeverity}
-                  setSelectedSeverity={setSelectedSeverity}
-                  selectedStatus={selectedStatus}
-                  setSelectedStatus={setSelectedStatus}
-                />
+                <ErrorBoundary>
+                  <ClusterTable
+                    clusters={data.clusters}
+                    selectedId={selectedId}
+                    onSelect={setSelectedId}
+                    search={search}
+                    setSearch={setSearch}
+                    selectedCategory={selectedCategory}
+                    setSelectedCategory={setSelectedCategory}
+                    selectedSeverity={selectedSeverity}
+                    setSelectedSeverity={setSelectedSeverity}
+                    selectedStatus={selectedStatus}
+                    setSelectedStatus={setSelectedStatus}
+                  />
+                </ErrorBoundary>
               </div>
             </div>
 

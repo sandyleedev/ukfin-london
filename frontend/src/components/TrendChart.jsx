@@ -23,6 +23,7 @@ export default function TrendChart({ trend }) {
   const handleChartClick = (activePayload) => {
     if (!activePayload || activePayload.length === 0) return;
     const dataPoint = activePayload[0].payload;
+    if (!dataPoint || !dataPoint.date) return;
 
     setSelectedPoint(dataPoint);
     setScraping(true);
