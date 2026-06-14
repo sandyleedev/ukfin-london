@@ -1,4 +1,4 @@
-import { Logo } from "../ui.jsx";
+import reguLensLogo from "../ReguLensLogo.png";
 
 export default function Header({ generatedAt, adjudicator, onOverview }) {
   const date = generatedAt
@@ -7,8 +7,8 @@ export default function Header({ generatedAt, adjudicator, onOverview }) {
   return (
     <header className="h-16 flex items-center px-6 gap-5 flex-shrink-0 bg-surface/80 backdrop-blur-xl border-b border-white/[0.06] z-30">
       <div className="flex items-center gap-3">
-        <a onClick={onOverview} className="w-9 h-9 rounded-xl flex items-center justify-center bg-brand/10 border border-brand/20 cursor-pointer">
-          <Logo className="w-5 h-5 text-brand" />
+        <a onClick={onOverview} className="w-9 h-9 rounded-xl flex items-center justify-center border border-brand/20 cursor-pointer overflow-hidden p-1.5">
+          <img src={reguLensLogo} alt="ReguLens Logo" className="w-full h-full object-contain" />
         </a>
         <span className="font-bold text-lg font-heading tracking-tight text-ink">ReguLens</span>
         <span className="text-white/20 text-lg">|</span>

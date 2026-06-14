@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { ArrowRight, Sparkles, Target, Eye } from "lucide-react";
-import { Logo } from "../ui.jsx";
+import reguLensLogo from "../ReguLensLogo.png";
 
 export default function LandingPage({ onLaunch }) {
   const container = {
@@ -48,15 +48,15 @@ export default function LandingPage({ onLaunch }) {
       >
         {/* Logo */}
         <motion.div variants={item} className="mb-8">
-          <div className="w-20 h-20 rounded-2xl glass flex items-center justify-center animate-float shadow-lg">
-            <Logo className="w-10 h-10 text-brand" />
+          <div className="w-20 h-20 rounded-2xl glass flex items-center justify-center animate-float shadow-lg overflow-hidden p-3.5">
+            <img src={reguLensLogo} alt="ReguLens Logo" className="w-full h-full object-contain" />
           </div>
         </motion.div>
 
         {/* Title */}
         <motion.h1
           variants={item}
-          className="text-7xl sm:text-8xl md:text-9xl font-extrabold font-heading tracking-tight text-gradient mb-6 h-40"
+          className="text-7xl sm:text-8xl md:text-9xl font-extrabold font-heading tracking-tight text-gradient mb-2 h-40"
         >
           ReguLens
         </motion.h1>
@@ -64,7 +64,7 @@ export default function LandingPage({ onLaunch }) {
         {/* Tagline */}
         <motion.p
           variants={item}
-          className="text-xl md:text-2xl text-muted font-light mb-20 text-center max-w-2xl leading-relaxed"
+          className="text-xl md:text-2xl text-muted font-light mb-6 text-center max-w-2xl leading-relaxed"
         >
           A new lens to view financial regulation.
         </motion.p>
@@ -95,7 +95,7 @@ export default function LandingPage({ onLaunch }) {
           whileHover={{ scale: 1.03, boxShadow: "0 8px 40px rgba(37,99,235,0.2)" }}
           whileTap={{ scale: 0.97 }}
           onClick={onLaunch}
-          className="px-10 py-4 bg-brand text-white font-semibold rounded-2xl text-lg shadow-[0_4px_20px_rgba(37,99,235,0.15)] transition-all flex items-center gap-3 group"
+          className="px-10 py-4 bg-gradient-to-r from-blue-500 to-teal-500 text-white font-semibold rounded-2xl text-lg shadow-[0_4px_20px_rgba(37,99,235,0.15)] transition-all flex items-center gap-3 group"
         >
           <span>Enter Dashboard</span>
           <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" strokeWidth={2} />
