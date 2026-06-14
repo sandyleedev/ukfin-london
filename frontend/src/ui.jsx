@@ -34,7 +34,7 @@ export function StatusBadge({ status }) {
     ESCALATING: { color: "#dc2626", bg: "#dc262608", border: "#dc262620" },
     PERSISTENT: { color: "#ea580c", bg: "#ea580c08", border: "#ea580c20" },
     SIMMERING: { color: "#ca8a04", bg: "#ca8a0408", border: "#ca8a0420" },
-    STABLE: { color: "#5b6b82", bg: "#5b6b8208", border: "#5b6b8220" },
+    STABLE: { color: "#61758a", bg: "#61758a08", border: "#61758a20" },
   };
   const s = styles[status] || styles.STABLE;
   return (

@@ -93,9 +93,9 @@ export default function LandingPage({ onLaunch }) {
   ];
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center relative overflow-hidden bg-[#fafbfe] font-sans selection:bg-brand/10 selection:text-brand">
+    <div className="min-h-screen w-full flex flex-col items-center justify-center relative overflow-hidden bg-[#f2faf9] font-sans selection:bg-brand/10 selection:text-brand">
       {/* Animated Matrix-like scan line */}
-      <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-brand/20 to-transparent animate-[shimmer_8s_infinite] pointer-events-none" />
+      <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-[#78ede7]/30 to-transparent animate-[shimmer_8s_infinite] pointer-events-none" />
 
       {/* Cybernetic telemetry corner markings */}
       <div className="absolute top-6 left-6 text-[10px] font-mono text-muted/40 pointer-events-none tracking-widest hidden sm:block">
@@ -109,14 +109,14 @@ export default function LandingPage({ onLaunch }) {
       </div>
 
       {/* Ambient high-tech glowing orbs */}
-      <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-brand/[0.04] rounded-full blur-[140px] animate-pulse-glow pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/3 w-[500px] h-[500px] bg-accent/30 rounded-full blur-[120px] animate-pulse-glow pointer-events-none" style={{ animationDelay: "2s" }} />
+      <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-[#78ede7]/[0.08] rounded-full blur-[140px] animate-pulse-glow pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/3 w-[500px] h-[500px] bg-[#c7e6e5]/40 rounded-full blur-[120px] animate-pulse-glow pointer-events-none" style={{ animationDelay: "2s" }} />
 
       {/* High precision drafting grid overlay */}
       <div
         className="absolute inset-0 opacity-[0.035] pointer-events-none"
         style={{
-          backgroundImage: "linear-gradient(rgba(37,99,235,0.25) 1px, transparent 1px), linear-gradient(90deg, rgba(37,99,235,0.25) 1px, transparent 1px)",
+          backgroundImage: "linear-gradient(rgba(12,92,99,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(12,92,99,0.15) 1px, transparent 1px)",
           backgroundSize: "48px 48px",
         }}
       />
@@ -130,7 +130,7 @@ export default function LandingPage({ onLaunch }) {
         {/* Futuristic Floating Logo Capsule */}
         <motion.div variants={item} className="mb-6">
           <div className="relative group">
-            <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-blue-500 to-teal-500 opacity-20 blur-lg group-hover:opacity-40 transition-opacity duration-1000 animate-pulse-glow" />
+            <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-[#0c5c63] to-[#78ede7] opacity-20 blur-lg group-hover:opacity-40 transition-opacity duration-1000 animate-pulse-glow" />
             <div className="relative w-20 h-20 rounded-2xl glass border border-line/40 flex items-center justify-center animate-float shadow-lg overflow-hidden p-3.5 bg-white/70">
               <img src={reguLensLogo} alt="ReguLens Logo" className="w-full h-full object-contain" />
             </div>
@@ -187,10 +187,10 @@ export default function LandingPage({ onLaunch }) {
         {/* Futuristic Pulsing CTA */}
         <motion.button
           variants={item}
-          whileHover={{ scale: 1.03, boxShadow: "0 8px 30px rgba(37,99,235,0.25)" }}
+          whileHover={{ scale: 1.03, boxShadow: "0 8px 30px rgba(12,92,99,0.25)" }}
           whileTap={{ scale: 0.97 }}
           onClick={onLaunch}
-          className="px-12 py-4 bg-gradient-to-r from-blue-600 to-teal-500 hover:from-blue-700 hover:to-teal-600 text-white font-bold rounded-2xl text-lg transition-all flex items-center gap-3 group relative overflow-hidden shadow-md"
+          className="px-12 py-4 bg-gradient-to-r from-[#0c5c63] to-[#7accc9] hover:from-[#073a3f] hover:to-[#0c5c63] text-white font-bold rounded-2xl text-lg transition-all flex items-center gap-3 group relative overflow-hidden shadow-md"
         >
           <span className="relative z-10 uppercase tracking-widest text-sm">Enter Dashboard</span>
           <ArrowRight className="w-4 h-4 group-hover:translate-x-1.5 transition-transform relative z-10" strokeWidth={2.5} />

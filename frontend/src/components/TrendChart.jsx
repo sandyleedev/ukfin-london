@@ -149,16 +149,16 @@ export default function TrendChart({ trend }) {
                   </linearGradient>
                 ))}
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#B4CDE640" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#b8e1e040" vertical={false} />
               <XAxis
                 dataKey="label"
-                tick={{ fontSize: 11, fill: "#5b6b82" }}
+                tick={{ fontSize: 11, fill: "#61758a" }}
                 interval="preserveStartEnd"
                 tickLine={false}
-                axisLine={{ stroke: "#B4CDE6" }}
+                axisLine={{ stroke: "#b8e1e0" }}
               />
               <YAxis
-                tick={{ fontSize: 11, fill: "#5b6b82" }}
+                tick={{ fontSize: 11, fill: "#61758a" }}
                 tickLine={false}
                 axisLine={false}
                 allowDecimals={false}
@@ -167,14 +167,14 @@ export default function TrendChart({ trend }) {
                 contentStyle={{
                   fontSize: 13,
                   borderRadius: 12,
-                  border: "1px solid #B4CDE6",
+                  border: "1px solid #b8e1e0",
                   backgroundColor: "rgba(255,255,255,0.95)",
                   backdropFilter: "blur(12px)",
-                  color: "#1a2332",
-                  boxShadow: "0 8px 32px rgba(180,205,230,0.2)",
+                  color: "#384250",
+                  boxShadow: "0 8px 32px rgba(12, 92, 99, 0.1)",
                 }}
-                labelStyle={{ color: "#2563EB", fontWeight: 600 }}
-                itemStyle={{ color: "#1a2332" }}
+                labelStyle={{ color: "#0c5c63", fontWeight: 600 }}
+                itemStyle={{ color: "#384250" }}
               />
               {["low", "medium", "high", "critical"].map((sev) => (
                 <Area

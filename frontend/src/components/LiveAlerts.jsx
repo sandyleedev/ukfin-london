@@ -89,7 +89,7 @@ export default function LiveAlerts({ alerts }) {
       <ul>
         {shown.map((a, i) => {
           const Icon = SEV_ICON[a.severity] || Info;
-          const color = SEVERITY_HEX[a.severity] || "#5b6b82";
+          const color = SEVERITY_HEX[a.severity] || "#61758a";
           const isCrit = a.severity === "CRITICAL";
           return (
             <li

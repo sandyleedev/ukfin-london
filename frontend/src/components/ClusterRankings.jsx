@@ -53,7 +53,7 @@ export default function ClusterRankings({ clusters, selectedId, onSelect }) {
                   <div className="h-1 bg-line/30 rounded-full mt-3 overflow-hidden">
                     <div
                       className="h-full rounded-full transition-all duration-700"
-                      style={{ width: `${c.priority_pct}%`, background: "linear-gradient(90deg, #2563EB, #60a5fa)" }}
+                      style={{ width: `${c.priority_pct}%`, background: "linear-gradient(90deg, #0c5c63, #7accc9)" }}
                     />
                   </div>
                 </div>

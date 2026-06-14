@@ -5,8 +5,8 @@
 html, body, #root { height: 100%; }
 body {
   margin: 0;
-  background: #F0F6FA;
-  color: #1a2332;
+  background: #f2faf9;
+  color: #384250;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -16,24 +16,24 @@ body {
 @layer components {
   .glass {
     @apply bg-white/70 backdrop-blur-xl border border-line/40 rounded-2xl;
-    box-shadow: 0 4px 24px rgba(180, 205, 230, 0.15), 0 1px 0 rgba(255, 255, 255, 0.8) inset;
+    box-shadow: 0 4px 24px rgba(12, 92, 99, 0.08), 0 1px 0 rgba(255, 255, 255, 0.8) inset;
   }
   .glass-subtle {
     @apply bg-white/50 backdrop-blur-md border border-line/30 rounded-xl;
-    box-shadow: 0 2px 12px rgba(180, 205, 230, 0.1);
+    box-shadow: 0 2px 12px rgba(12, 92, 99, 0.05);
   }
   .glass-hover {
     @apply transition-all duration-300;
   }
   .glass-hover:hover {
     @apply bg-white/90 border-line/60;
-    box-shadow: 0 8px 32px rgba(180, 205, 230, 0.25), 0 0 0 1px rgba(37, 99, 235, 0.08);
+    box-shadow: 0 8px 32px rgba(12, 92, 99, 0.15), 0 0 0 1px rgba(120, 237, 231, 0.15);
     transform: translateY(-2px);
   }
 }
 
 .text-gradient {
-  background: linear-gradient(135deg, #2563EB 0%, #3b82f6 50%, #60a5fa 100%);
+  background: linear-gradient(135deg, #0c5c63 0%, #7accc9 50%, #78ede7 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
