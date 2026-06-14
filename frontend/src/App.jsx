@@ -17,9 +17,44 @@ export default function App() {
   const [selectedId, setSelectedId] = useState(null);
   const [started, setStarted] = useState(false);
 
+  const [search, setSearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("ALL");
+  const [selectedSeverity, setSelectedSeverity] = useState("ALL");
+  const [selectedStatus, setSelectedStatus] = useState("ALL");
+
   useEffect(() => {
     fetchDashboard().then(setData).catch((e) => setError(e.message));
   }, []);
+
+  const handleKpiClick = (type) => {
+    if (type === "active") {
+      setSearch("");
+      setSelectedCategory("ALL");
+      setSelectedSeverity("ALL");
+      setSelectedStatus("ALL");
+      document.getElementById("cluster-table")?.scrollIntoView({ behavior: "smooth" });
+    } else if (type === "critical") {
+      setSearch("");
+      setSelectedCategory("ALL");
+      setSelectedSeverity("CRITICAL");
+      setSelectedStatus("ALL");
+      document.getElementById("cluster-table")?.scrollIntoView({ behavior: "smooth" });
+    } else if (type === "escalating") {
+      setSearch("");
+      setSelectedCategory("ALL");
+      setSelectedSeverity("ALL");
+      setSelectedStatus("ESCALATING");
+      document.getElementById("cluster-table")?.scrollIntoView({ behavior: "smooth" });
+    } else if (type === "cases") {
+      setSearch("");
+      setSelectedCategory("ALL");
+      setSelectedSeverity("ALL");
+      setSelectedStatus("ALL");
+      document.getElementById("cluster-table")?.scrollIntoView({ behavior: "smooth" });
+    } else if (type === "rate") {
+      document.getElementById("trend-chart")?.scrollIntoView({ behavior: "smooth" });
+    }
+  };
 
   if (error) {
     return (
@@ -62,7 +97,7 @@ export default function App() {
           <Header generatedAt={data.generated_at} adjudicator={data.adjudicator} onOverview={() => setStarted(false)} />
 
           <main className="flex-1 overflow-auto no-scrollbar p-6 space-y-6 animate-fade-in">
-            <KpiStrip kpis={data.kpis} />
+            <KpiStrip kpis={data.kpis} onKpiClick={handleKpiClick} />
 
             {/* Row 1: Alerts & Cluster Rankings side-by-side */}
             <div className="grid grid-cols-12 gap-6">
@@ -76,15 +111,27 @@ export default function App() {
 
             {/* Row 2: Alert Volume Trend (occupies full row, above ClusterTable) */}
             <div className="grid grid-cols-12 gap-6">
-              <div className="col-span-12 animate-fade-in" style={{ height: "400px" }}>
+              <div id="trend-chart" className="col-span-12 animate-fade-in" style={{ height: "400px" }}>
                 <TrendChart trend={data.trend} />
               </div>
             </div>
 
             {/* Row 3: Identified Clusters (occupies full row) */}
             <div className="grid grid-cols-12 gap-6">
-              <div className="col-span-12 min-h-0 animate-fade-in">
-                <ClusterTable clusters={data.clusters} selectedId={selectedId} onSelect={setSelectedId} />
+              <div id="cluster-table" className="col-span-12 min-h-0 animate-fade-in">
+                <ClusterTable
+                  clusters={data.clusters}
+                  selectedId={selectedId}
+                  onSelect={setSelectedId}
+                  search={search}
+                  setSearch={setSearch}
+                  selectedCategory={selectedCategory}
+                  setSelectedCategory={setSelectedCategory}
+                  selectedSeverity={selectedSeverity}
+                  setSelectedSeverity={setSelectedSeverity}
+                  selectedStatus={selectedStatus}
+                  setSelectedStatus={setSelectedStatus}
+                />
               </div>
             </div>
 

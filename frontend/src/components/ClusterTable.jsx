@@ -2,10 +2,19 @@ import { useMemo, useState } from "react";
 import { Search, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 import { Panel, SeverityBadge, StatusBadge, GrowthPill, fmtTime } from "../ui.jsx";
 
-export default function ClusterTable({ clusters, selectedId, onSelect }) {
-  const [search, setSearch] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("ALL");
-  const [selectedSeverity, setSelectedSeverity] = useState("ALL");
+export default function ClusterTable({
+  clusters,
+  selectedId,
+  onSelect,
+  search,
+  setSearch,
+  selectedCategory,
+  setSelectedCategory,
+  selectedSeverity,
+  setSelectedSeverity,
+  selectedStatus,
+  setSelectedStatus,
+}) {
   const [sortField, setSortField] = useState("cases"); // Default sort by cases
   const [sortDirection, setSortDirection] = useState("desc");
 
@@ -15,7 +24,7 @@ export default function ClusterTable({ clusters, selectedId, onSelect }) {
     { label: "Cases", field: "cases" },
     { label: "7d Growth", field: "growth_7d" },
     { label: "Severity", field: "severity" },
-    { label: "Status", field: null },
+    { label: "Status", field: "status" },
     { label: "Last Activity", field: "last_activity" }
   ];
 
@@ -33,9 +42,10 @@ export default function ClusterTable({ clusters, selectedId, onSelect }) {
         (c.companies && c.companies.some((co) => co.toLowerCase().includes(search.toLowerCase())));
       const matchesCategory = selectedCategory === "ALL" || c.category === selectedCategory;
       const matchesSeverity = selectedSeverity === "ALL" || c.severity_band === selectedSeverity;
-      return matchesSearch && matchesCategory && matchesSeverity;
+      const matchesStatus = selectedStatus === "ALL" || c.status === selectedStatus;
+      return matchesSearch && matchesCategory && matchesSeverity && matchesStatus;
     });
-  }, [clusters, search, selectedCategory, selectedSeverity]);
+  }, [clusters, search, selectedCategory, selectedSeverity, selectedStatus]);
 
   // Sort clusters
   const sortedClusters = useMemo(() => {
@@ -112,12 +122,13 @@ export default function ClusterTable({ clusters, selectedId, onSelect }) {
         </div>
 
         {/* Clear Button */}
-        {(search || selectedCategory !== "ALL" || selectedSeverity !== "ALL") && (
+        {(search || selectedCategory !== "ALL" || selectedSeverity !== "ALL" || selectedStatus !== "ALL") && (
           <button
             onClick={() => {
               setSearch("");
               setSelectedCategory("ALL");
               setSelectedSeverity("ALL");
+              setSelectedStatus("ALL");
             }}
             className="text-xs font-semibold text-brand hover:text-brand-dark px-3 py-1.5 bg-brand/5 border border-brand/20 rounded-xl transition-all"
           >
@@ -163,11 +174,31 @@ export default function ClusterTable({ clusters, selectedId, onSelect }) {
                         onClick={(e) => e.stopPropagation()}
                         className="ml-2 px-2 py-1 bg-accent/60 hover:bg-accent border border-line/30 rounded-lg text-xs font-semibold text-muted hover:text-ink cursor-pointer focus:outline-none focus:ring-1 focus:ring-brand/30 transition-all"
                       >
-                        <option value="ALL">All Sevs</option>
+                        <option value="ALL">All Severity</option>
                         <option value="CRITICAL">Critical</option>
                         <option value="HIGH">High</option>
                         <option value="MEDIUM">Medium</option>
                         <option value="LOW">Low</option>
+                      </select>
+                    </div>
+                  </th>
+                );
+              }
+              if (col.field === "status") {
+                return (
+                  <th key={col.label} className="font-semibold px-6 py-4 border-b border-line/30 whitespace-nowrap select-none">
+                    <div className="flex items-center gap-1.5 justify-between">
+                      <select
+                        value={selectedStatus}
+                        onChange={(e) => setSelectedStatus(e.target.value)}
+                        onClick={(e) => e.stopPropagation()}
+                        className="ml-2 px-2 py-1 bg-accent/60 hover:bg-accent border border-line/30 rounded-lg text-xs font-semibold text-muted hover:text-ink cursor-pointer focus:outline-none focus:ring-1 focus:ring-brand/30 transition-all"
+                      >
+                        <option value="ALL">All Status</option>
+                        <option value="ESCALATING">Escalating</option>
+                        <option value="PERSISTENT">Persistent</option>
+                        <option value="SIMMERING">Simmering</option>
+                        <option value="STABLE">Stable</option>
                       </select>
                     </div>
                   </th>
