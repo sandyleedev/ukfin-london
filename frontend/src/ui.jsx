@@ -1,4 +1,5 @@
 // Shared UI helpers: severity styling, formatters, small primitives.
+import { AlertCircle, AlertTriangle, ShieldAlert, CheckCircle2, PlayCircle, Loader2 } from "lucide-react";
 
 export const SEVERITY_HEX = {
   CRITICAL: "#dc2b4b",
@@ -7,30 +8,56 @@ export const SEVERITY_HEX = {
   LOW: "#3fa66a",
 };
 
-const SEV_CLASSES = {
-  CRITICAL: "bg-critical/10 text-critical border-critical/30",
-  HIGH: "bg-high/10 text-high border-high/30",
-  MEDIUM: "bg-medium/10 text-medium border-medium/30",
-  LOW: "bg-low/10 text-low border-low/30",
-};
-
 export function SeverityBadge({ band }) {
-  const cls = SEV_CLASSES[band] || SEV_CLASSES.LOW;
+  let color = "text-muted border-line";
+  let bg = "bg-white";
+  let Icon = AlertCircle;
+  if (band === "critical") {
+    color = "text-critical border-critical/30";
+    bg = "bg-critical/5";
+    Icon = ShieldAlert;
+  } else if (band === "high") {
+    color = "text-high border-high/30";
+    bg = "bg-high/5";
+    Icon = AlertTriangle;
+  } else if (band === "medium") {
+    color = "text-medium border-medium/30";
+    bg = "bg-medium/5";
+    Icon = AlertCircle;
+  }
+
   return (
-    <span className={`inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-semibold tracking-wide border ${cls}`}>
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium border rounded-md ${color} ${bg}`}>
+      <Icon className="w-3.5 h-3.5" strokeWidth={2} />
       {band}
     </span>
   );
 }
 
 export function StatusBadge({ status }) {
-  const map = {
-    ESCALATING: "text-critical",
-    PERSISTENT: "text-high",
-    SIMMERING: "text-medium",
-    STABLE: "text-muted",
-  };
-  return <span className={`text-[11px] font-semibold ${map[status] || "text-muted"}`}>{status}</span>;
+  let color = "text-muted border-line";
+  let bg = "bg-white";
+  let Icon = Loader2;
+  if (status === "escalated") {
+    color = "text-brand border-brand/30";
+    bg = "bg-brand/5";
+    Icon = AlertCircle;
+  } else if (status === "investigating") {
+    color = "text-accent border-accent/30";
+    bg = "bg-accent/5";
+    Icon = PlayCircle;
+  } else if (status === "monitoring") {
+    color = "text-low border-low/30";
+    bg = "bg-low/5";
+    Icon = CheckCircle2;
+  }
+
+  return (
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium border rounded-md ${color} ${bg}`}>
+      <Icon className="w-3.5 h-3.5" strokeWidth={2} />
+      {status}
+    </span>
+  );
 }
 
 // "+312%" green-up / red-down with sign.
@@ -59,11 +86,11 @@ export function fmtTime(iso) {
 
 export function Panel({ title, subtitle, right, children, className = "" }) {
   return (
-    <section className={`bg-card border border-line rounded-lg flex flex-col min-h-0 ${className}`}>
-      <div className="flex items-center justify-between px-4 py-2.5 border-b border-line flex-shrink-0">
+    <section className={`surface-panel flex flex-col min-h-0 ${className}`}>
+      <div className="flex items-center justify-between px-4 py-3 border-b border-line flex-shrink-0">
         <div>
-          <h2 className="text-sm font-semibold text-ink">{title}</h2>
-          {subtitle && <p className="text-[11px] text-muted mt-0.5">{subtitle}</p>}
+          <h2 className="text-lg font-heading font-semibold text-ink">{title}</h2>
+          {subtitle && <p className="text-sm text-muted mt-1">{subtitle}</p>}
         </div>
         {right}
       </div>

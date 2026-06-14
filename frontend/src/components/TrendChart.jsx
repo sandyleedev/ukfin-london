@@ -16,12 +16,13 @@ export default function TrendChart({ trend }) {
                 </linearGradient>
               ))}
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#eef1f6" vertical={false} />
-            <XAxis dataKey="label" tick={{ fontSize: 10, fill: "#5b6b82" }} interval="preserveStartEnd" tickLine={false} axisLine={{ stroke: "#d6dce8" }} />
-            <YAxis tick={{ fontSize: 10, fill: "#5b6b82" }} tickLine={false} axisLine={false} allowDecimals={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
+            <XAxis dataKey="label" tick={{ fontSize: 10, fill: "#6B7280" }} interval="preserveStartEnd" tickLine={false} axisLine={{ stroke: "#E5E7EB" }} />
+            <YAxis tick={{ fontSize: 10, fill: "#6B7280" }} tickLine={false} axisLine={false} allowDecimals={false} />
             <Tooltip
-              contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #d6dce8" }}
-              labelStyle={{ color: "#1a2332", fontWeight: 600 }}
+              contentStyle={{ fontSize: 12, borderRadius: 12, border: "1px solid #E5E7EB", backgroundColor: "#FFFFFF", boxShadow: "0 8px 30px rgba(0,0,0,0.08)", color: "#111827" }}
+              labelStyle={{ color: "#0F172A", fontWeight: 600 }}
+              itemStyle={{ color: "#4B5563" }}
             />
             {/* Stack low→critical so critical sits on top. */}
             {["low", "medium", "high", "critical"].map((sev) => (

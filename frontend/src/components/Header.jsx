@@ -1,34 +1,32 @@
-// Top app bar — slate-blue, matching the reference dashboard chrome.
-export default function Header({ generatedAt, adjudicator }) {
+import { Aperture } from "lucide-react";
+
+export default function Header({ generatedAt, adjudicator, onOverview }) {
   const date = generatedAt
     ? new Date(generatedAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })
     : "—";
   return (
-    <header
-      className="h-12 flex items-center px-5 gap-4 flex-shrink-0 text-white"
-      style={{ backgroundColor: "#3d5a7a" }}
-    >
-      <div className="flex items-center gap-2">
-        <div className="w-5 h-5 rounded-sm flex items-center justify-center" style={{ background: "#4fc3dc" }}>
-          <span className="text-[#1a2332] text-xs font-black">S</span>
+    <header className="h-16 flex items-center px-8 gap-6 flex-shrink-0 bg-white border-b border-line z-30">
+      <div className="flex items-center gap-3">
+        <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-brand text-white shadow-sm">
+          <Aperture className="w-5 h-5" strokeWidth={1.5} />
         </div>
-        <span className="font-semibold text-sm tracking-tight">Sentinel</span>
-        <span className="text-white/50 text-sm">·</span>
-        <span className="text-white/80 text-sm">FCA Supervision Intelligence</span>
+        <span className="font-semibold text-xl font-heading tracking-tight text-brand">ReguLens</span>
+        <span className="text-line text-lg ml-2">|</span>
+        <span className="text-muted text-sm font-medium ml-2">FCA Supervision Intelligence</span>
       </div>
 
-      <span className="text-[10px] font-semibold tracking-wider bg-white/15 px-2 py-0.5 rounded">
-        ALPHA · LIVE CFPB DATA
+      <span className="text-[10px] font-bold tracking-widest bg-bg border border-line text-brand px-2.5 py-1 rounded-md ml-2">
+        ALPHA
       </span>
 
-      <nav className="flex items-center gap-1 ml-4 text-sm">
-        <a className="px-2.5 py-1 rounded bg-white/15 font-medium">Supervision</a>
-        <a className="px-2.5 py-1 rounded text-white/70 hover:bg-white/10 cursor-pointer">Overview</a>
+      <nav className="flex items-center gap-2 ml-8 text-sm font-medium">
+        <a className="px-3 py-1.5 rounded-lg bg-bg text-brand">Supervision</a>
+        <a onClick={onOverview} className="px-3 py-1.5 rounded-lg text-muted hover:bg-bg hover:text-brand cursor-pointer transition-colors">Overview</a>
       </nav>
 
-      <div className="ml-auto flex items-center gap-3 text-xs text-white/80">
+      <div className="ml-auto flex items-center gap-4 text-xs font-medium text-muted">
         <span className="capitalize">Adjudicator: {adjudicator || "—"}</span>
-        <span className="text-white/40">|</span>
+        <span className="text-line">|</span>
         <span>{date} · Daily View</span>
       </div>
     </header>

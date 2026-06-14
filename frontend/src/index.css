@@ -5,9 +5,13 @@
 html, body, #root { height: 100%; }
 body {
   margin: 0;
-  background: #f5f7fa;
-  color: #1a2332;
   -webkit-font-smoothing: antialiased;
+}
+
+@layer components {
+  .surface-panel {
+    @apply bg-card border border-line rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)];
+  }
 }
 
 /* Hide scrollbars but keep scrolling (matches reference chrome-less panels). */
