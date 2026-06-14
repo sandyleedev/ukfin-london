@@ -49,11 +49,22 @@ KEYWORD_PATTERNS: Dict[str, str] = {
     # chatbot / chat bot
     "chatbot": r"\bchat\s?bot\b",
     "bot denied": r"\bbot denied\b",
-    # \bglitch\b avoids "glitchy" per the spec.
+    # \bglitch\b avoids "glitchy" per the spec. NOTE: "glitch" is a SOFT keyword
+    # (see SOFT_KEYWORDS below) — it's recorded for transparency but, on its own,
+    # does NOT qualify a complaint as a Stage-1 candidate. Consumers use "glitch"
+    # casually ("I refreshed my browser thinking it was a glitch"), so a lone
+    # match is overwhelmingly noise; a genuine automation glitch also carries an
+    # implied signal (no human, no explanation) or another keyword.
     "glitch": r"\bglitch\b",
     "pricing anomaly": r"\bpricing anomaly\b",
     "automated decision": r"\bautomated decision\b",
 }
+
+# Keywords too ambiguous to confirm AI/automation on their own. They are still
+# recorded in matched_keywords, but generate_candidates does not treat them as a
+# Tier-1 explicit hit (see has_explicit). "glitch" is the canonical example:
+# overwhelmingly used casually by consumers, not to describe an automated system.
+SOFT_KEYWORDS = {"glitch"}
 
 # Pre-compile each label's pattern individually (IGNORECASE). We keep them
 # separate rather than one giant alternation so that, per matched row, we can
@@ -325,7 +336,13 @@ def generate_candidates(complaints) -> pd.DataFrame:
     df["likelihood_tier"] = [t for t, _ in likelihood]
     algo_context = pd.Series([ctx for _, ctx in likelihood], index=df.index)
 
-    has_explicit = df["matched_keywords"].map(len) > 0
+    # "Soft" keywords are too ambiguous to qualify a complaint on their own; they
+    # only count when corroborated (another keyword, or the Tier-2 path). This
+    # keeps them in matched_keywords for transparency while stopping a lone,
+    # casual "glitch" from being treated as a confirmed automation signal.
+    has_explicit = df["matched_keywords"].apply(
+        lambda ks: any(k not in SOFT_KEYWORDS for k in (ks or []))
+    )
     has_implied = df["matched_signals"].map(len) > 0
     tier2 = algo_context & has_implied
 

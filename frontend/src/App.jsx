@@ -132,8 +132,8 @@ function ClusterDrawer({ cluster, onClose }) {
             <Section title="Sample complaints">
               <ul className="space-y-2">
                 {cluster.sample_narratives.map((n, i) => (
-                  <li key={i} className="text-[11px] text-muted leading-snug bg-bg border border-line rounded p-2">
-                    “{n}…”
+                  <li key={i} className="text-[11px] text-muted leading-snug bg-bg border border-line rounded p-2 whitespace-pre-line">
+                    “{n}{n.length >= 2000 ? "…" : ""}”
                   </li>
                 ))}
               </ul>

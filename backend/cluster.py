@@ -232,8 +232,13 @@ def build_clusters(df: pd.DataFrame) -> List[Dict]:
                 "first_seen": min(dates).isoformat() if dates else None,
                 "last_activity": max(dates).isoformat() if dates else None,
                 "daily_counts": _daily_counts(dates, as_of),
+                # Keep enough of each narrative to actually read the complaint
+                # (a 240-char snippet was usually just the opening boilerplate).
+                # Capped at 2000 to match the adjudicator's narrative budget and
+                # keep dashboard.json a sensible size; the frontend appends an
+                # ellipsis only when a narrative was truncated.
                 "sample_narratives": members["consumer_complaint_narrative"]
-                    .astype(str).str.slice(0, 240).head(3).tolist(),
+                    .astype(str).str.slice(0, 2000).head(3).tolist(),
                 "matched_signals": sorted({s for sigs in members.get("matched_signals", [])
                                            for s in (sigs or [])}),
                 "matched_keywords": sorted({k for kws in members.get("matched_keywords", [])

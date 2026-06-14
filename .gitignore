@@ -20,6 +20,9 @@ env/
 *.log
 dist/
 build/
+# Regenerable CFPB crawl cache — can be hundreds of MB (over GitHub's 100MB
+# limit). Rebuild with: REFRESH=1 python build_dashboard.py
+backend/output/raw_cache.json
 
 # Node
 npm-debug.log*

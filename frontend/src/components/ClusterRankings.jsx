@@ -6,7 +6,7 @@ export default function ClusterRankings({ clusters, selectedId, onSelect }) {
   return (
     <Panel
       title="Complaint Cluster Rankings"
-      subtitle="ranked by weighted priority · freq × severity × growth × reg-relevance × AI-conf"
+      subtitle="ranked by weighted priority · freq × severity × growth × reg-relevance"
       className="h-full"
     >
       <ul className="divide-y divide-line">
