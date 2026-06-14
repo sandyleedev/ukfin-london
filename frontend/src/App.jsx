@@ -66,10 +66,10 @@ export default function App() {
 
             {/* Row 1: Alerts & Cluster Rankings side-by-side */}
             <div className="grid grid-cols-12 gap-6">
-              <div className="col-span-12 lg:col-span-6 animate-fade-in" style={{ height: "560px" }}>
+              <div className="col-span-12 lg:col-span-8 animate-fade-in" style={{ height: "560px" }}>
                 <ClusterRankings clusters={data.clusters} selectedId={selectedId} onSelect={setSelectedId} />
               </div>
-              <div className="col-span-12 lg:col-span-6 animate-fade-in" style={{ height: "560px" }}>
+              <div className="col-span-12 lg:col-span-4 animate-fade-in" style={{ height: "560px" }}>
                 <LiveAlerts alerts={data.alerts} />
               </div>
             </div>
