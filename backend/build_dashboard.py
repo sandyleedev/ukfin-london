@@ -1,5 +1,5 @@
 """
-build_dashboard.py — Sentinel end-to-end pipeline.
+build_dashboard.py — ReguLens end-to-end pipeline.
 
   CFPB complaints
       → Stage 1  ai_filter.generate_candidates   (high-recall two-signal filter)

@@ -19,6 +19,7 @@ Design decisions:
 import json
 import logging
 import os
+import time
 from datetime import date, datetime
 from typing import Dict, List
 
@@ -51,6 +52,10 @@ PAGE_SIZE = 1000
 # Network timeout per request (seconds). Generous because some month chunks
 # are large and the server can be slow to assemble them.
 REQUEST_TIMEOUT = 60
+
+# Polite delay between month chunks (seconds). The CCDB API rate-limits bursts
+# (HTTP 429), so we pause between chunks. Tunable via CFPB_CHUNK_DELAY.
+CHUNK_DELAY = float(os.environ.get("CFPB_CHUNK_DELAY", "4"))
 
 # The only fields we keep per complaint. Everything else is discarded to keep
 # the cache lean. Keys here are the *output* field names; the mapping below
@@ -255,6 +260,10 @@ def fetch_complaints(months_back: int = MONTHS_BACK,
         logger.info("[%d/%d] Month %s done: %d complaints (running total: %d)",
                     idx, len(month_windows), month_label,
                     len(hits), len(all_complaints))
+
+        # Be polite between chunks to avoid the API's burst rate limit (429).
+        if idx < len(month_windows) and CHUNK_DELAY > 0:
+            time.sleep(CHUNK_DELAY)
 
     logger.info("Fetch complete: %d total complaints", len(all_complaints))
     return all_complaints

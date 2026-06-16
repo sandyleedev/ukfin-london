@@ -1,5 +1,5 @@
 """
-assessment.py — Sentinel Stage 5: turn each ranked cluster into a supervisory
+assessment.py — ReguLens Stage 5: turn each ranked cluster into a supervisory
 dossier a regulator can act on.
 
 For every cluster it answers the questions the FCA mentor asked for:

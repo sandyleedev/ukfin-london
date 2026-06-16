@@ -1,5 +1,5 @@
 """
-cluster.py — Sentinel Stage 3: cluster confirmed AI-related complaints into
+cluster.py — ReguLens Stage 3: cluster confirmed AI-related complaints into
 recurring harm patterns.
 
 Why clustering (unsupervised) and NOT random forest (supervised):
@@ -122,6 +122,32 @@ def _growth_7d(dates: List[datetime], as_of: datetime) -> float:
     return round((last7 - prev7) / prev7 * 100.0, 1)
 
 
+def _case_records(members: pd.DataFrame, cluster_id: str) -> List[Dict]:
+    """Per-complaint records for a cluster — backs the case-level drill-down /
+    triage view. One row per real CFPB complaint, with a readable narrative
+    snippet, stamped with the owning cluster id so the frontend can filter.
+    """
+    def col(row, name, default=""):
+        val = row.get(name, default) if hasattr(row, "get") else default
+        return "" if val is None or (isinstance(val, float) and pd.isna(val)) else val
+
+    records: List[Dict] = []
+    for _, row in members.iterrows():
+        narrative = str(col(row, "consumer_complaint_narrative"))[:1200]
+        records.append({
+            "complaint_id": str(col(row, "complaint_id")) or None,
+            "cluster_id": cluster_id,
+            "date_received": str(col(row, "date_received")) or None,
+            "company": str(col(row, "company")) or None,
+            "product": str(col(row, "product")) or None,
+            "sub_product": str(col(row, "sub_product")) or None,
+            "issue": str(col(row, "issue")) or None,
+            "company_response": str(col(row, "company_response_to_consumer")) or None,
+            "narrative": narrative,
+        })
+    return records
+
+
 def _daily_counts(dates: List[datetime], as_of: datetime, window: int = 90) -> List[int]:
     """Per-day case counts over the trailing `window` days (oldest→newest).
 
@@ -222,8 +248,9 @@ def build_clusters(df: pd.DataFrame) -> List[Dict]:
             else:
                 name = (issue_hint or category)
 
+            cluster_id = f"CL-{cid:03d}"
             clusters.append({
-                "id": f"CL-{cid:03d}",
+                "id": cluster_id,
                 "name": f"{category} — {name}" if name and category not in name else name or category,
                 "category": category,
                 "cases": int(len(members)),
@@ -243,6 +270,7 @@ def build_clusters(df: pd.DataFrame) -> List[Dict]:
                                            for s in (sigs or [])}),
                 "matched_keywords": sorted({k for kws in members.get("matched_keywords", [])
                                             for k in (kws or [])}),
+                "case_records": _case_records(members, cluster_id),
             })
             cid += 1
 
