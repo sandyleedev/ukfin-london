@@ -1,0 +1,14 @@
+# Render Blueprint — deploys the ReguLens FastAPI backend on the free tier.
+# The prebuilt backend/output/dashboard.json is committed, so no CFPB crawl
+# runs at deploy time; the service just serves it.
+#
+# Deploy: push to GitHub, then on render.com → New → Blueprint → pick this repo.
+services:
+  - type: web
+    name: regulens-api
+    runtime: python
+    rootDir: backend
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn api:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health

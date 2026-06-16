@@ -1,5 +1,5 @@
 """
-scoring.py — Sentinel Stage 4: turn clusters into a prioritised supervision
+scoring.py — ReguLens Stage 4: turn clusters into a prioritised supervision
 queue, plus the live-alert feed and the alert-volume trend that drive the
 dashboard.
 
