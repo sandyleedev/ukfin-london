@@ -191,11 +191,32 @@ See [docs/ROADMAP.md](docs/ROADMAP.md) for the fuller plan.
 > adjudication, rule-based assessments, data-only chart drill-down,
 > template-based action drafts).
 
-### Choosing the live analysis engine
+### Choosing the analysis engine
 
-The **build-time** adjudicator/assessment backend is set by the env vars above
-(the prebuilt `dashboard.json` is not re-crawled at request time). The **live**
-LLM features — the chart drill-down and the semi-automated action drafting —
-read a separate, switchable engine you can change at runtime on the **Scoring**
-page (Deterministic / Claude / Gemini / Auto). `GET /api/providers` reports which
-keys are configured.
+Pick the engine on the **Scoring** page (Deterministic / Claude / Gemini / Auto);
+`GET /api/providers` reports which keys are configured. Switching the engine does
+two things:
+
+1. **Live features** — the chart drill-down and action drafting call the selected
+   provider at request time.
+2. **Adjudication snapshot** — the API serves a *pre-built, engine-matched*
+   dashboard (`dashboard.<engine>.json`) so the **AI-detection ratio itself
+   changes** with the engine. e.g. Gemini = 1,038 AI cases / 41 clusters vs the
+   deterministic score = 1,464 / 44. If an engine has no snapshot, it falls back
+   to the default `dashboard.json`.
+
+**Building an engine snapshot** (re-adjudicates the candidates with that engine):
+
+```bash
+DASHBOARD_OUT=dashboard.gemini.json ADJUDICATE_BACKEND=gemini python build_dashboard.py
+```
+
+Adjudication is **batched** and **resumable** — each candidate's verdict is cached
+(`output/gemini_verdicts.json`) and saved after every batch, so a run interrupted
+by a rate-limit resumes and only judges what's missing. The committed
+`dashboard.gemini.json` is *partial* (~2.6k of 4.8k candidates carry real Gemini
+verdicts; the rest use the deterministic fallback) because the **free-tier daily
+quota is tiny (~20 requests per model)**. Re-run the build when the quota resets,
+cycle models (`GEMINI_MODEL=gemini-2.0-flash`, …), or use a paid key to reach
+100% Gemini. `GEMINI_NO_FETCH=1` rebuilds the snapshot from the cache with no API
+calls.
