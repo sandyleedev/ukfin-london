@@ -7,7 +7,7 @@ import Assessment from "./Assessment.jsx";
 export default function ClusterDrawer({ cluster, onClose }) {
   const navigate = useNavigate();
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-6 animate-fade-in" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 animate-fade-in" onClick={onClose}>
       <div className="absolute inset-0 bg-ink/20 backdrop-blur-md" />
       <motion.div
         initial={{ scale: 0.95, opacity: 0 }}
@@ -16,7 +16,7 @@ export default function ClusterDrawer({ cluster, onClose }) {
         className="relative w-full max-w-4xl max-h-[90vh] bg-white border border-line/40 rounded-3xl shadow-[0_16px_64px_rgba(180,205,230,0.3)] overflow-auto no-scrollbar"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="px-8 py-6 border-b border-line/30 flex items-start justify-between sticky top-0 bg-white/95 backdrop-blur-xl z-10 rounded-t-3xl">
+        <div className="px-5 sm:px-8 py-5 sm:py-6 border-b border-line/30 flex items-start justify-between sticky top-0 bg-white/95 backdrop-blur-xl z-10 rounded-t-3xl">
           <div>
             <div className="flex items-center gap-2.5 mb-2">
               <SeverityBadge band={cluster.severity_band} />
@@ -28,8 +28,8 @@ export default function ClusterDrawer({ cluster, onClose }) {
           <button onClick={onClose} className="text-muted hover:text-ink text-2xl leading-none p-2 hover:bg-accent rounded-xl transition-colors">×</button>
         </div>
 
-        <div className="p-6 space-y-5">
-          <div className="grid grid-cols-2 gap-4">
+        <div className="p-4 sm:p-6 space-y-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <Metric label="Category" value={cluster.category} />
             <Metric label="Cases" value={cluster.cases.toLocaleString()} />
             <Metric label="7-day growth" value={<GrowthPill value={cluster.growth_7d} />} />
@@ -70,7 +70,7 @@ export default function ClusterDrawer({ cluster, onClose }) {
             </Section>
           )}
 
-          <Assessment assessment={cluster.assessment} />
+          <Assessment assessment={cluster.assessment} clusterId={cluster.id} clusterName={cluster.name} />
 
           {cluster.sample_narratives?.length > 0 && (
             <Section title="Sample complaints">

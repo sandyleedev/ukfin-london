@@ -138,7 +138,7 @@ export default function ClusterTable({
       </div>
 
       {/* Main Table */}
-      <table className="w-full text-left border-collapse">
+      <table className="w-full min-w-[760px] text-left border-collapse">
         <thead className="sticky top-0 bg-white/90 backdrop-blur-xl z-10">
           <tr className="text-xs uppercase tracking-wider text-muted">
             {cols.map((col) => {

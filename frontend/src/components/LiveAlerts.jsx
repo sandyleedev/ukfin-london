@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Panel, SEVERITY_HEX } from "../ui.jsx";
-import { ShieldAlert, AlertTriangle, AlertCircle, Info } from "lucide-react";
+import { ShieldAlert, AlertTriangle, AlertCircle, Info, HelpCircle } from "lucide-react";
+import MethodologyModal from "./MethodologyModal.jsx";
 
 const FILTERS = ["ALL", "SPIKE", "RISING", "SIMMERING", "NEW CLUSTER", "TRIAGE FLAG"];
 
@@ -41,6 +42,7 @@ const FILTER_CLASSES = {
 export default function LiveAlerts({ alerts }) {
   const [filter, setFilter] = useState("ALL");
   const [expanded, setExpanded] = useState(false);
+  const [showMethodology, setShowMethodology] = useState(false);
 
   const filtered = useMemo(() => {
     let list = alerts || [];
@@ -56,14 +58,22 @@ export default function LiveAlerts({ alerts }) {
   };
 
   return (
+    <>
     <Panel
       title={
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           <span>Live Alerts</span>
           <span className="flex items-center gap-1.5 text-[10px] font-bold tracking-widest bg-critical/10 text-critical px-2.5 py-1 rounded-full border border-critical/20">
             <span className="w-1.5 h-1.5 rounded-full bg-critical pulse-dot" />
             LIVE
           </span>
+          <button
+            onClick={() => setShowMethodology(true)}
+            title="Why these alerts? See the thresholds & formulas"
+            className="flex items-center justify-center w-6 h-6 rounded-md text-muted hover:text-brand hover:bg-accent/40 transition-colors flex-shrink-0"
+          >
+            <HelpCircle className="w-4 h-4" />
+          </button>
         </div>
       }
       right={
@@ -130,5 +140,7 @@ export default function LiveAlerts({ alerts }) {
         )}
       </ul>
     </Panel>
+    {showMethodology && <MethodologyModal onClose={() => setShowMethodology(false)} />}
+    </>
   );
 }

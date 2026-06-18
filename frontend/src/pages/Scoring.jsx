@@ -1,8 +1,144 @@
 import { useEffect, useMemo, useState } from "react";
-import { Lock, Unlock, RotateCcw, ArrowUp, ArrowDown, Minus, Info } from "lucide-react";
+import { Lock, Unlock, RotateCcw, ArrowUp, ArrowDown, Minus, Info, Cpu, Check, Save, ChevronDown } from "lucide-react";
 import { useDashboard } from "../DataContext.jsx";
-import { rescore } from "../api.js";
+import { rescore, fetchProviders, setAnalysisEngine, fetchWeights, saveWeights, resetWeights, fetchConfig, saveConfig, resetConfig } from "../api.js";
 import { Panel, SeverityBadge } from "../ui.jsx";
+
+// Editable per-category regulatory-relevance priors (CRUD → /api/config),
+// applied live across the dashboard. Authorised supervisors only.
+function RelevanceEditor({ authed }) {
+  const [map, setMap] = useState(null);
+  const [isCustom, setIsCustom] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [saveState, setSaveState] = useState("idle");
+
+  useEffect(() => {
+    fetchConfig().then((r) => { setMap(r.reg_relevance); setIsCustom(r.is_custom); }).catch(() => {});
+  }, []);
+
+  if (!map) return null;
+  const cats = Object.keys(map).sort();
+
+  const set = (k, v) => setMap((m) => ({ ...m, [k]: v }));
+  const persist = () => {
+    setSaveState("saving");
+    saveConfig(map).then((r) => { setMap(r.reg_relevance); setIsCustom(r.is_custom); setSaveState("saved"); setTimeout(() => setSaveState("idle"), 1800); }).catch(() => setSaveState("idle"));
+  };
+  const reset = () => resetConfig().then((r) => { setMap(r.reg_relevance); setIsCustom(false); }).catch(() => {});
+
+  return (
+    <div className={`glass rounded-2xl p-5 ${!authed ? "opacity-60" : ""}`}>
+      <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between">
+        <span className="text-sm font-semibold text-ink flex items-center gap-2">
+          Category relevance priors
+          {isCustom && <span className="text-[10px] font-bold uppercase tracking-wider bg-brand/10 text-brand border border-brand/20 px-2 py-0.5 rounded">custom</span>}
+        </span>
+        <ChevronDown className={`w-4 h-4 text-muted transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+      <p className="text-xs text-muted mt-1">How central each category is to the FCA remit (0–1). Feeds the priority score.</p>
+      {open && (
+        <div className="mt-3 space-y-2.5">
+          {cats.map((k) => (
+            <div key={k}>
+              <div className="flex items-center justify-between text-xs mb-0.5">
+                <span className="text-ink">{k}</span>
+                <span className="font-mono font-semibold text-brand">{Number(map[k]).toFixed(2)}</span>
+              </div>
+              <input type="range" min="0" max="1" step="0.05" value={map[k]} disabled={!authed}
+                onChange={(e) => set(k, parseFloat(e.target.value))}
+                className="w-full accent-brand cursor-pointer disabled:cursor-not-allowed" />
+            </div>
+          ))}
+          {authed && (
+            <div className="flex items-center justify-end gap-2 pt-1">
+              <button onClick={reset} className="flex items-center gap-1.5 text-xs font-semibold text-muted hover:text-ink px-3 py-1.5 rounded-lg hover:bg-accent/40 transition-colors">
+                <RotateCcw className="w-3.5 h-3.5" /> Reset
+              </button>
+              <button onClick={persist} disabled={saveState === "saving"} className="flex items-center gap-1.5 text-xs font-semibold text-white bg-brand hover:bg-brand-dark px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50">
+                {saveState === "saved" ? <Check className="w-3.5 h-3.5" /> : <Save className="w-3.5 h-3.5" />}
+                {saveState === "saving" ? "Saving…" : saveState === "saved" ? "Saved — live" : "Save"}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+const ENGINES = [
+  { key: "auto", label: "Auto", desc: "Pick the best available provider." },
+  { key: "score", label: "Deterministic", desc: "No LLM — rule-based, fully auditable." },
+  { key: "claude", label: "Claude", desc: "Anthropic Claude reasoning." },
+  { key: "gemini", label: "Gemini", desc: "Google Gemini reasoning." },
+];
+
+function AnalysisEngineCard({ onEngineChange }) {
+  const [status, setStatus] = useState(null);
+  const [saving, setSaving] = useState(null);
+
+  useEffect(() => {
+    fetchProviders().then(setStatus).catch(() => setStatus(null));
+  }, []);
+
+  const choose = (engine) => {
+    setSaving(engine);
+    setAnalysisEngine(engine)
+      .then((s) => { setStatus(s); onEngineChange && onEngineChange(); })
+      .catch(() => {})
+      .finally(() => setSaving(null));
+  };
+
+  const selected = status?.selected || "auto";
+
+  return (
+    <div className="glass rounded-2xl p-6">
+      <div className="text-xs uppercase tracking-wider text-muted mb-1 flex items-center gap-1.5">
+        <Cpu className="w-3.5 h-3.5" /> Analysis engine
+      </div>
+      <p className="text-xs text-muted mb-4">
+        Which model powers the <span className="font-semibold text-ink">live</span> AI features —
+        the chart drill-down and action drafting. (The prebuilt dashboard's adjudication is set at
+        build time via <code className="text-brand">ADJUDICATE_BACKEND</code> and isn't re-run live.)
+      </p>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {ENGINES.map((e) => {
+          const avail = e.key === "auto" || status?.providers?.[e.key]?.available;
+          const active = selected === e.key;
+          return (
+            <button
+              key={e.key}
+              onClick={() => avail && choose(e.key)}
+              disabled={!avail || saving}
+              className={`text-left p-3 rounded-xl border transition-all ${active
+                ? "border-brand bg-brand/5 ring-1 ring-brand/30"
+                : avail
+                  ? "border-line/40 hover:border-brand/50 hover:bg-accent/30"
+                  : "border-line/30 opacity-50 cursor-not-allowed"}`}
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-sm font-semibold text-ink">{e.label}</span>
+                {active && <Check className="w-3.5 h-3.5 text-brand" />}
+              </div>
+              <p className="text-[11px] text-muted leading-snug">{e.desc}</p>
+              {e.key !== "auto" && (
+                <span className={`mt-1.5 inline-block text-[10px] font-mono px-1.5 py-0.5 rounded ${avail ? "text-low bg-low/10" : "text-muted bg-line/20"}`}>
+                  {avail ? "key configured" : "no key"}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+      {status && (
+        <p className="text-[11px] text-muted/70 mt-3">
+          Resolved engine: <span className="font-mono text-ink">{status.resolved}</span>
+          {status.resolved === "score" && " — no LLM key found; live features show data-only output."}
+        </p>
+      )}
+    </div>
+  );
+}
 
 const DIMENSIONS = [
   { key: "frequency", label: "Frequency", desc: "How many consumers are affected (case volume)." },
@@ -15,12 +151,21 @@ const DIMENSIONS = [
 const DEMO_PASSCODE = "fca-admin";
 
 export default function Scoring() {
-  const { data } = useDashboard();
+  const { data, refresh } = useDashboard();
   const [weights, setWeights] = useState(data.weights);
   const [ranked, setRanked] = useState(null);
   const [authed, setAuthed] = useState(false);
   const [passcode, setPasscode] = useState("");
   const [authError, setAuthError] = useState(false);
+  const [saveState, setSaveState] = useState("idle"); // idle | saving | saved
+  const [isCustom, setIsCustom] = useState(false);
+
+  // Load any persisted (customer-tuned) weights so the page reflects what's live.
+  useEffect(() => {
+    fetchWeights()
+      .then((r) => { if (r.weights) { setWeights(r.weights); setIsCustom(!!r.is_custom); } })
+      .catch(() => {});
+  }, []);
 
   const baselineRank = useMemo(() => {
     const m = {};
@@ -52,7 +197,18 @@ export default function Scoring() {
     }
   };
 
-  const reset = () => setWeights(data.weights);
+  const persist = () => {
+    setSaveState("saving");
+    saveWeights(weights)
+      .then((r) => { setIsCustom(!!r.is_custom); setSaveState("saved"); setTimeout(() => setSaveState("idle"), 2000); })
+      .catch(() => setSaveState("idle"));
+  };
+
+  const reset = () => {
+    resetWeights()
+      .then((r) => { setWeights(r.weights); setIsCustom(false); })
+      .catch(() => setWeights(data.weights));
+  };
 
   return (
     <div className="space-y-6">
@@ -80,6 +236,11 @@ export default function Scoring() {
           Weights are normalised to sum to 1 at scoring time — current raw sum: <span className="font-semibold text-ink">{total.toFixed(2)}</span>.
         </p>
       </div>
+
+      <AnalysisEngineCard onEngineChange={() => {
+        refresh();
+        rescore(weights).then((r) => setRanked(r.clusters)).catch(() => {});
+      }} />
 
       <div className="grid grid-cols-12 gap-6">
         {/* Sliders */}
@@ -110,13 +271,20 @@ export default function Scoring() {
               <p className="text-[11px] text-muted/60 mt-2">Demo passcode: <code className="text-brand">{DEMO_PASSCODE}</code></p>
             </div>
           ) : (
-            <div className="glass rounded-2xl p-4 border border-low/30 flex items-center justify-between">
+            <div className="glass rounded-2xl p-4 border border-low/30 flex flex-wrap items-center justify-between gap-2">
               <span className="flex items-center gap-2 text-low font-semibold text-sm">
                 <Unlock className="w-4 h-4" /> Editing unlocked
+                {isCustom && <span className="text-[10px] font-bold uppercase tracking-wider bg-brand/10 text-brand border border-brand/20 px-2 py-0.5 rounded-md">custom active</span>}
               </span>
-              <button onClick={reset} className="flex items-center gap-1.5 text-xs font-semibold text-muted hover:text-ink px-3 py-1.5 rounded-lg hover:bg-accent/40 transition-colors">
-                <RotateCcw className="w-3.5 h-3.5" /> Reset to default
-              </button>
+              <div className="flex items-center gap-2">
+                <button onClick={reset} className="flex items-center gap-1.5 text-xs font-semibold text-muted hover:text-ink px-3 py-1.5 rounded-lg hover:bg-accent/40 transition-colors">
+                  <RotateCcw className="w-3.5 h-3.5" /> Reset to default
+                </button>
+                <button onClick={persist} disabled={saveState === "saving"} className="flex items-center gap-1.5 text-xs font-semibold text-white bg-brand hover:bg-brand-dark px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50">
+                  {saveState === "saved" ? <Check className="w-3.5 h-3.5" /> : <Save className="w-3.5 h-3.5" />}
+                  {saveState === "saving" ? "Saving…" : saveState === "saved" ? "Saved — live" : "Save as active"}
+                </button>
+              </div>
             </div>
           )}
 
@@ -137,12 +305,14 @@ export default function Scoring() {
               />
             </div>
           ))}
+
+          <RelevanceEditor authed={authed} />
         </div>
 
         {/* Live re-ranked queue */}
-        <div className="col-span-12 lg:col-span-7" style={{ height: "640px" }}>
+        <div className="col-span-12 lg:col-span-7 h-[520px] lg:h-[640px]">
           <Panel title="Live priority queue" subtitle="Re-ranked under the current weights · Δ vs default model" className="h-full">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full min-w-[460px] text-left border-collapse">
               <thead className="sticky top-0 bg-white/90 backdrop-blur-xl z-10">
                 <tr className="text-xs uppercase tracking-wider text-muted">
                   <th className="font-semibold px-5 py-3 border-b border-line/30">Rank</th>

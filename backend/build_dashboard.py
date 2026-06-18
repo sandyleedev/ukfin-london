@@ -37,7 +37,9 @@ import scoring
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUTPUT_DIR = os.path.join(HERE, "output")
 RAW_CACHE = os.path.join(OUTPUT_DIR, "raw_cache.json")
-DASHBOARD_PATH = os.path.join(OUTPUT_DIR, "dashboard.json")
+# DASHBOARD_OUT lets a build write to an alternate file (e.g. dashboard.gemini.json
+# for the Gemini-adjudicated snapshot the API serves when that engine is selected).
+DASHBOARD_PATH = os.path.join(OUTPUT_DIR, os.environ.get("DASHBOARD_OUT", "dashboard.json"))
 
 USE_CACHE = os.environ.get("REFRESH", "0") != "1"
 MONTHS_BACK = int(os.environ.get("MONTHS_BACK", "6"))
@@ -97,7 +99,9 @@ def run() -> int:
     print("📊 Stage 4: scoring, ranking, alerts, trend...")
     clusters = scoring.score_clusters(clusters)
     alerts = scoring.build_alerts(clusters)
-    trend = scoring.build_trend(clusters)
+    # Trend built from the real per-complaint dates so chart peaks line up with
+    # the click-to-drill-down counts (which also aggregate case_records by date).
+    trend = scoring.build_trend_from_records(clusters)
     kpis = scoring.build_kpis(clusters, total_fetched, total_ai)
 
     # Stage 5: per-cluster supervisory assessment (why concerning / why AI /

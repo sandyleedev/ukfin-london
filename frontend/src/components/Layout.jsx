@@ -2,6 +2,7 @@ import { Outlet } from "react-router-dom";
 import { motion } from "framer-motion";
 import Header from "./Header.jsx";
 import ErrorBoundary from "./ErrorBoundary.jsx";
+import OnboardingTour from "./OnboardingTour.jsx";
 import { useDashboard } from "../DataContext.jsx";
 
 export default function Layout() {
@@ -24,7 +25,7 @@ export default function Layout() {
   return (
     <div className="h-full flex flex-col bg-bg text-ink font-sans">
       <Header generatedAt={data?.generated_at} />
-      <main className="flex-1 overflow-auto no-scrollbar p-6">
+      <main className="flex-1 overflow-auto no-scrollbar p-4 md:p-6">
         {!data ? (
           <div className="h-full flex flex-col items-center justify-center text-muted gap-3">
             <div className="w-8 h-8 border-2 border-brand/30 border-t-brand rounded-full animate-spin" />
@@ -42,6 +43,7 @@ export default function Layout() {
           </motion.div>
         )}
       </main>
+      <OnboardingTour />
     </div>
   );
 }

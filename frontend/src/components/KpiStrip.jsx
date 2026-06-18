@@ -4,20 +4,20 @@ function Kpi({ label, value, sub, accent, Icon, onClick }) {
   return (
     <div
       onClick={onClick}
-      className="glass glass-hover px-6 py-5 flex-1 min-w-0 group cursor-pointer transition-all duration-300"
+      className="glass glass-hover px-4 sm:px-5 py-4 sm:py-5 min-w-0 group cursor-pointer transition-all duration-300"
     >
-      <div className="flex items-center gap-2.5 mb-2">
-        {Icon && <Icon className="w-4 h-4 text-muted group-hover:text-brand transition-colors" strokeWidth={2} />}
-        <div className="text-sm text-muted font-medium truncate">{label}</div>
+      <div className="flex items-center gap-2 mb-1.5 sm:mb-2">
+        {Icon && <Icon className="w-4 h-4 text-muted group-hover:text-brand transition-colors flex-shrink-0" strokeWidth={2} />}
+        <div className="text-xs sm:text-sm text-muted font-medium truncate">{label}</div>
       </div>
-      <div className="flex items-baseline gap-2">
+      <div className="flex items-baseline gap-1.5 flex-wrap">
         <span
-          className="text-3xl font-bold font-heading"
+          className="text-2xl sm:text-3xl font-bold font-heading leading-tight"
           style={accent ? { color: accent } : undefined}
         >
           {value}
         </span>
-        {sub && <span className="text-sm text-muted">{sub}</span>}
+        {sub && <span className="text-xs sm:text-sm text-muted">{sub}</span>}
       </div>
     </div>
   );
@@ -26,7 +26,7 @@ function Kpi({ label, value, sub, accent, Icon, onClick }) {
 export default function KpiStrip({ kpis, onKpiClick }) {
   if (!kpis) return null;
   return (
-    <div className="flex gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
       <Kpi
         label="Active clusters"
         value={kpis.active_clusters}

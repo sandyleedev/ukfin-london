@@ -99,7 +99,7 @@ export default function Cases() {
       </div>
 
       {/* Stat chips */}
-      <div className="flex gap-4">
+      <div className="grid grid-cols-3 gap-3 sm:gap-4">
         <Stat label="Matching cases" value={total.toLocaleString()} />
         <Stat label="Open" value={openCount.toLocaleString()} accent="#ea580c" />
         <Stat label="Closed" value={closedCount.toLocaleString()} accent="#059669" />
@@ -159,7 +159,7 @@ export default function Cases() {
         ) : visible.length === 0 ? (
           <div className="py-16 text-center text-muted text-sm">No matching cases.</div>
         ) : (
-          <table className="w-full text-left border-collapse">
+          <table className="w-full min-w-[760px] text-left border-collapse">
             <thead className="sticky top-0 bg-white/90 backdrop-blur-xl z-10">
               <tr className="text-xs uppercase tracking-wider text-muted">
                 <th className="font-semibold px-6 py-3 border-b border-line/30">Complaint</th>
@@ -278,9 +278,9 @@ function Field({ label, value }) {
 
 function Stat({ label, value, accent }) {
   return (
-    <div className="glass px-6 py-4 flex-1">
-      <div className="text-sm text-muted font-medium">{label}</div>
-      <div className="text-2xl font-bold font-heading mt-1" style={accent ? { color: accent } : undefined}>
+    <div className="glass px-4 sm:px-6 py-4">
+      <div className="text-xs sm:text-sm text-muted font-medium">{label}</div>
+      <div className="text-xl sm:text-2xl font-bold font-heading mt-1" style={accent ? { color: accent } : undefined}>
         {value}
       </div>
     </div>

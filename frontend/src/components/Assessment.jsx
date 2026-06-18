@@ -1,4 +1,18 @@
-import { AlertTriangle, Bot, Scale, Microscope, Wrench } from "lucide-react";
+import { useState } from "react";
+import { AlertTriangle, Bot, Scale, Microscope, Wrench, Send } from "lucide-react";
+import ActionDraftModal from "./ActionDraftModal.jsx";
+import { useAudience } from "../AudienceContext.jsx";
+
+// Normalise ai_rationale (backend may send a list of bullets or a legacy
+// paragraph string) into an array of bullet points.
+function toBullets(value) {
+  if (Array.isArray(value)) return value.filter(Boolean);
+  if (typeof value !== "string") return [];
+  return value
+    .split(/(?<=[.!?])\s+(?=[A-Z])|;\s+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
 
 const PRIN_MAPPING = {
   "Consumer Support": {
@@ -45,9 +59,12 @@ function LikelihoodBar({ value }) {
   );
 }
 
-export default function Assessment({ assessment }) {
+export default function Assessment({ assessment, clusterId, clusterName }) {
+  const [draftAction, setDraftAction] = useState(null);
+  const { a: audience } = useAudience();
   if (!assessment) return null;
   const a = assessment;
+  const bullets = toBullets(a.ai_rationale);
 
   return (
     <div className="space-y-5 border-t border-line/30 pt-5 mt-2">
@@ -63,7 +80,14 @@ export default function Assessment({ assessment }) {
       </Block>
 
       <Block Icon={Bot} title="Why we think it is AI-driven">
-        <p className="text-sm text-muted leading-relaxed">{a.ai_rationale}</p>
+        <ul className="space-y-1.5">
+          {bullets.map((b, i) => (
+            <li key={i} className="flex gap-2 text-sm text-muted leading-relaxed">
+              <span className="text-brand mt-0.5 flex-shrink-0">•</span>
+              <span>{b}</span>
+            </li>
+          ))}
+        </ul>
       </Block>
 
       <Block Icon={Scale} title="Consumer Duty at risk">
@@ -111,14 +135,34 @@ export default function Assessment({ assessment }) {
           {a.actions?.map((act, i) => (
             <li key={i} className="flex gap-3">
               <span className="text-sm font-bold text-brand mt-0.5 flex-shrink-0">{i + 1}.</span>
-              <div>
+              <div className="min-w-0 flex-1">
                 <p className="text-sm text-ink leading-snug">{act.action}</p>
-                <p className="text-xs text-brand mt-1">{act.basis}</p>
+                <div className="flex items-center justify-between gap-2 mt-1 flex-wrap">
+                  <p className="text-xs text-brand">{act.basis}</p>
+                  {clusterId && (
+                    <button
+                      onClick={() => setDraftAction(act.action)}
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-brand hover:bg-brand-dark rounded-lg px-2.5 py-1 transition-colors flex-shrink-0"
+                    >
+                      <Send className="w-3 h-3" strokeWidth={2} />
+                      {audience.actionCta}
+                    </button>
+                  )}
+                </div>
               </div>
             </li>
           ))}
         </ol>
       </Block>
+
+      {draftAction && (
+        <ActionDraftModal
+          clusterId={clusterId}
+          clusterName={clusterName}
+          action={draftAction}
+          onClose={() => setDraftAction(null)}
+        />
+      )}
     </div>
   );
 }

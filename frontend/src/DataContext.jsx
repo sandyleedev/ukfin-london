@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { fetchDashboard } from "./api.js";
 
 const DataContext = createContext(null);
@@ -7,12 +7,15 @@ export function DataProvider({ children }) {
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    fetchDashboard().then(setData).catch((e) => setError(e.message));
+  const refresh = useCallback(() => {
+    setError(null);
+    return fetchDashboard().then(setData).catch((e) => setError(e.message));
   }, []);
 
+  useEffect(() => { refresh(); }, [refresh]);
+
   return (
-    <DataContext.Provider value={{ data, error }}>
+    <DataContext.Provider value={{ data, error, refresh }}>
       {children}
     </DataContext.Provider>
   );

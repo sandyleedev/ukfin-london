@@ -4,7 +4,7 @@ llm_adjudicator.py
 STAGE 2 of the ReguTriage two-stage funnel: precision adjudication of the
 Stage-1 candidates produced by ai_filter.generate_candidates().
 
-Two interchangeable backends:
+Interchangeable backends:
 
   • "llm"   — ask Claude, per candidate, whether the complaint genuinely
               involves AI / automation that affected the consumer. Best recall
@@ -17,7 +17,11 @@ Two interchangeable backends:
               likelihood, thresholded. Zero cost, fully auditable, no network.
               The explainable fallback when no API key is present.
 
-  • "auto"  — pick "llm" when ANTHROPIC_API_KEY is set, else "score".
+  • "gemini" — same per-candidate classification via Google Gemini (JSON
+              output). Needs GOOGLE_API_KEY. Routed through llm_providers.
+
+  • "auto"  — pick "llm" when ANTHROPIC_API_KEY is set, else "gemini" when
+              GOOGLE_API_KEY is set, else "score".
 
 Both backends add the same columns to the candidate DataFrame:
   - ai_related   : bool   (final verdict)
@@ -208,6 +212,145 @@ def _adjudicate_llm(df: pd.DataFrame, max_candidates: int) -> pd.DataFrame:
 
 
 # ---------------------------------------------------------------------------
+# Backend: Gemini adjudication
+# ---------------------------------------------------------------------------
+
+def _gemini_batch_prompt(rows) -> str:
+    """Build one prompt classifying a batch of candidates, indexed 0..N-1."""
+    lines = []
+    for i, (_, row) in enumerate(rows):
+        kws = ", ".join(row.get("matched_keywords") or []) or "(none)"
+        sigs = ", ".join(row.get("matched_signals") or []) or "(none)"
+        narrative = str(row.get("consumer_complaint_narrative") or "")[:700]
+        lines.append(
+            f"[{i}] product={row.get('product')} | issue={row.get('issue')} | "
+            f"keywords={kws} | signals={sigs} | likelihood={row.get('likelihood_tier')}\n"
+            f"narrative: \"{narrative}\""
+        )
+    body = "\n\n".join(lines)
+    return (
+        "Classify EACH complaint below. For every item return its index i, a "
+        "boolean ai_related, and a confidence in [0,1]. Return exactly one entry "
+        "per item, using the item's own index.\n\n" + body
+    )
+
+
+_VERDICT_CACHE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                              "output", "gemini_verdicts.json")
+
+
+def _load_verdict_cache() -> dict:
+    import json
+    try:
+        with open(_VERDICT_CACHE, "r", encoding="utf-8") as fh:
+            return json.load(fh)
+    except (OSError, ValueError):
+        return {}
+
+
+def _save_verdict_cache(cache: dict) -> None:
+    import json
+    os.makedirs(os.path.dirname(_VERDICT_CACHE), exist_ok=True)
+    with open(_VERDICT_CACHE, "w", encoding="utf-8") as fh:
+        json.dump(cache, fh)
+
+
+def _adjudicate_gemini(df: pd.DataFrame, max_candidates: int) -> pd.DataFrame:
+    """Google Gemini classification, BATCHED and RESUMABLE.
+
+    Each candidate's verdict is cached to output/gemini_verdicts.json keyed by
+    complaint_id, and saved after every batch. So if the free-tier key 429s
+    mid-build, progress is kept — re-running only adjudicates the candidates that
+    aren't cached yet, until the whole set is done. Rows still missing at the end
+    of a run fall back to the deterministic scorer so a partial build is sane.
+    """
+    import time
+    import llm_providers
+
+    if not llm_providers.have_google():
+        logger.warning("No GOOGLE_API_KEY — falling back to score backend.")
+        return _adjudicate_score(df)
+
+    out = df.copy()
+    if max_candidates and len(out) > max_candidates:
+        logger.info("Capping Gemini adjudication at %d of %d candidates.",
+                    max_candidates, len(out))
+        out = out.head(max_candidates).copy()
+
+    batch = int(os.environ.get("GEMINI_ADJ_BATCH", "40"))
+    throttle = float(os.environ.get("GEMINI_ADJ_THROTTLE", "0"))
+    system = ADJUDICATION_SYSTEM
+    cache = _load_verdict_cache()
+
+    rows = list(out.iterrows())
+    # Only call Gemini for candidates we don't already have a cached verdict for.
+    pending = [(idx, row) for idx, row in rows
+               if str(row.get("complaint_id")) not in cache]
+    logger.info("Gemini adjudication: %d cached, %d pending (of %d).",
+                len(rows) - len(pending), len(pending), len(rows))
+
+    # GEMINI_NO_FETCH=1 → assemble from the cache only (no API calls); pending
+    # rows use the deterministic fallback. Lets us build a snapshot instantly
+    # from whatever's cached when the daily quota is spent.
+    if os.environ.get("GEMINI_NO_FETCH") == "1":
+        pending = []
+
+    for start in range(0, len(pending), batch):
+        chunk = pending[start:start + batch]
+        result = llm_providers.gemini_classify_batch(system, _gemini_batch_prompt(chunk),
+                                                     max_tokens=8192)
+        parsed = {}
+        if isinstance(result, list):
+            for v in result:
+                try:
+                    parsed[int(v["i"])] = v
+                except (KeyError, TypeError, ValueError):
+                    continue
+        got = 0
+        for j in range(len(chunk)):
+            v = parsed.get(j)
+            if not v:
+                continue  # leave uncached so a later run retries it
+            cid = str(chunk[j][1].get("complaint_id"))
+            cache[cid] = {
+                "ai_related": bool(v.get("ai_related", False)),
+                "confidence": float(max(0.0, min(1.0, v.get("confidence", 0.0) or 0.0))),
+            }
+            got += 1
+        if got:
+            _save_verdict_cache(cache)  # persist progress after every batch
+        logger.info("  gemini batch %d-%d: cached %d/%d (total cached %d/%d)",
+                    start, start + len(chunk), got, len(chunk),
+                    sum(1 for _, r in rows if str(r.get("complaint_id")) in cache), len(rows))
+        if throttle:
+            time.sleep(throttle)
+
+    # Assemble verdicts: cached (gemini) where present, deterministic fallback else.
+    ai, conf, rat = [], [], []
+    n_fallback = 0
+    for _, row in rows:
+        cid = str(row.get("complaint_id"))
+        cv = cache.get(cid)
+        if cv:
+            ai.append(bool(cv["ai_related"]))
+            conf.append(round(float(cv["confidence"]), 2))
+            rat.append("gemini")
+        else:
+            ok, sc, _ = _score_row(row)
+            ai.append(ok); conf.append(sc); rat.append("score (gemini pending)")
+            n_fallback += 1
+
+    out["ai_related"] = ai
+    out["confidence"] = conf
+    out["rationale"] = rat
+    out["adjudicator"] = "gemini"
+    logger.info("Gemini adjudication: %d/%d confirmed AI-related (%d still pending "
+                "→ score fallback; re-run to complete).",
+                int(sum(ai)), len(out), n_fallback)
+    return out
+
+
+# ---------------------------------------------------------------------------
 # Public entry point
 # ---------------------------------------------------------------------------
 
@@ -216,8 +359,9 @@ def adjudicate(candidates: pd.DataFrame, backend: str = "auto",
     """
     Run Stage-2 adjudication over Stage-1 candidates.
 
-    backend: "auto" (llm if ANTHROPIC_API_KEY else score) | "llm" | "score".
-    max_candidates: cap for the llm backend (0 = no cap). Ignored by score.
+    backend: "auto" | "llm" (Claude) | "gemini" | "score".
+      auto → llm if ANTHROPIC_API_KEY, else gemini if GOOGLE_API_KEY, else score.
+    max_candidates: cap for the LLM backends (0 = no cap). Ignored by score.
 
     Returns the candidate DataFrame with ai_related/confidence/rationale/
     adjudicator columns added. The caller typically filters to ai_related=True.
@@ -227,10 +371,14 @@ def adjudicate(candidates: pd.DataFrame, backend: str = "auto",
 
     chosen = backend
     if backend == "auto":
-        chosen = "llm" if os.environ.get("ANTHROPIC_API_KEY") else "score"
-        if chosen == "score":
-            logger.info("No ANTHROPIC_API_KEY found — using deterministic "
-                        "score backend (set the key to enable LLM adjudication).")
+        if os.environ.get("ANTHROPIC_API_KEY"):
+            chosen = "llm"
+        elif os.environ.get("GOOGLE_API_KEY") or os.environ.get("GEMINI_API_KEY"):
+            chosen = "gemini"
+        else:
+            chosen = "score"
+            logger.info("No LLM key found — using deterministic score backend "
+                        "(set ANTHROPIC_API_KEY or GOOGLE_API_KEY to enable LLM).")
 
     if chosen == "llm":
         try:
@@ -238,6 +386,8 @@ def adjudicate(candidates: pd.DataFrame, backend: str = "auto",
         except ImportError:
             logger.warning("anthropic SDK not installed — falling back to score.")
             return _adjudicate_score(candidates)
+    if chosen == "gemini":
+        return _adjudicate_gemini(candidates, max_candidates)
     return _adjudicate_score(candidates)
 
 

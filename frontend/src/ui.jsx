@@ -75,12 +75,14 @@ export function fmtTime(iso) {
 export function Panel({ title, subtitle, right, children, className = "" }) {
   return (
     <section className={`glass flex flex-col min-h-0 ${className}`}>
-      <div className="flex items-center justify-between px-6 py-4 border-b border-line/30 flex-shrink-0">
-        <div>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 sm:px-6 py-4 border-b border-line/30 flex-shrink-0">
+        <div className="min-w-0">
           <h2 className="text-base font-semibold text-ink font-heading">{title}</h2>
-          {subtitle && <p className="text-sm text-muted mt-0.5">{subtitle}</p>}
+          {/* subtitle may be a string or a block node — use a div, never a <p>,
+              so callers can pass badges/rows without invalid DOM nesting. */}
+          {subtitle && <div className="text-sm text-muted mt-0.5">{subtitle}</div>}
         </div>
-        {right}
+        {right && <div className="flex-shrink-0">{right}</div>}
       </div>
       <div className="flex-1 min-h-0 overflow-auto no-scrollbar">{children}</div>
     </section>

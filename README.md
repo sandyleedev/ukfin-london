@@ -2,6 +2,9 @@
 
 > A new lens to view financial regulation.
 
+**🔗 Live demo → https://ukfin-london.vercel.app**
+&nbsp;·&nbsp; [Roadmap & known limitations](docs/ROADMAP.md) &nbsp;·&nbsp; [Business / GTM](docs/BUSINESS.md)
+
 ReguLens is an early-warning system that mines the **CFPB Consumer Complaint
 Database** for **AI / automation-driven consumer harm**, clusters it into
 recurring patterns, and ranks those patterns so a regulator can see *what to act
@@ -15,6 +18,30 @@ The dashboard is a four-area workflow for a supervision team:
 | **Clusters** | The full, sortable/filterable table of every identified harm pattern; drill into any cluster's detail and supervisory assessment. |
 | **Cases** | Every individual CFPB complaint behind the clusters — search, filter, read the narrative, and **close cases** as they're actioned. |
 | **Scoring** | The transparent priority formula. Authorised supervisors unlock the weight sliders and watch the queue **re-rank live**. |
+
+## What's new (Phase 2)
+
+- **Mobile-responsive** layout across every page (stacking panels, scrollable
+  tables, responsive drawers/modals).
+- **First-run guided tour** — a skippable, desktop walkthrough of the dashboard;
+  replay any time from the header `?` button.
+- **Real chart drill-down** — click any point on the trend chart to analyse that
+  day: the actual CFPB cases that drove it, plus a best-effort grounded web-news
+  correlation via the selected LLM.
+- **Semi-automated actions** — turn a recommended supervisory action into a
+  regulation-anchored draft letter (auto-matched recipient), edit it, and record
+  it to a **simulated** outbox (no real email is sent).
+- **Two LLM providers** — Anthropic Claude *and* Google Gemini, with a live
+  engine selector on the Scoring page (plus the deterministic no-key fallback).
+- **Alert methodology reference** — "Why these alerts?" opens the exact
+  thresholds and severity/priority formulas, sourced from the scoring engine.
+- **Audience modes** — a Regulator / Bank-compliance / Auditor view switcher that
+  reframes the same engine's copy, CTAs and emphasis (B2G → B2B).
+- **Customer-editable parameters** — persist tuned priority weights *and*
+  per-category regulatory-relevance priors; they take effect live across the
+  dashboard.
+- **Action Log** — every drafted-and-(simulated)-sent action is recorded and
+  browsable at `/outbox`.
 
 ## The pipeline (workflow)
 
@@ -65,6 +92,15 @@ ReguLens/
 | GET | `/api/clusters/{id}` | one cluster incl. case records |
 | GET | `/api/cases` | flattened per-complaint records, search + filter |
 | POST | `/api/rescore` | re-rank clusters under regulator-tuned weights |
+| GET | `/api/methodology` | alert thresholds + severity/priority formulas (from the scoring constants) |
+| GET | `/api/drilldown?date=` | real same-day case aggregation + best-effort grounded web-news synthesis |
+| GET | `/api/providers` | which LLM providers are configured + selected live engine |
+| GET·POST | `/api/analysis-config` | get / set the live analysis engine (`auto·score·claude·gemini`) |
+| POST | `/api/draft-action` | draft a regulation-anchored information request for a recommended action |
+| POST | `/api/send-action` | record an action to the file-based outbox (**simulated send — no real email**) |
+| GET | `/api/outbox` | list items recorded to the simulated outbox |
+| GET·PUT·DELETE | `/api/weights` | get / persist / reset customer-tuned priority weights (applied live) |
+| GET·PUT·DELETE | `/api/config` | get / persist / reset per-category regulatory-relevance priors |
 
 ## Run it locally
 
@@ -119,6 +155,22 @@ Frontend → **Vercel**, backend → **Render**. Both have free tiers, and becau
 
 That's it — share the Vercel URL.
 
+### Future cloud (AWS / GCP)
+
+Vercel + Render is the zero-cost demo footprint. For a production / scaled
+deployment the intended path is:
+
+- **API** → a container (the FastAPI app) on **AWS ECS/Fargate** or **GCP Cloud
+  Run** — both autoscale to zero and remove Render's cold-start.
+- **Artifacts** (`dashboard.json`, future model outputs) → **S3** / **GCS**,
+  with the API reading the latest object instead of a committed file.
+- **Scheduled crawl + rebuild** → **EventBridge + Fargate task** / **Cloud
+  Scheduler + Cloud Run Job**, so data refreshes on a cadence.
+- **Frontend** → CloudFront/S3 or Firebase Hosting (or keep Vercel).
+- **Secrets** → AWS Secrets Manager / GCP Secret Manager (never in the repo).
+
+See [docs/ROADMAP.md](docs/ROADMAP.md) for the fuller plan.
+
 ## Options
 
 | Env var | Effect |
@@ -126,6 +178,45 @@ That's it — share the Vercel URL.
 | `REFRESH=1` | force a fresh CFPB crawl instead of using `output/raw_cache.json` |
 | `MONTHS_BACK=6` | crawl depth in months (default 6) |
 | `CFPB_CHUNK_DELAY=6` | seconds to pause between month chunks (avoids HTTP 429) |
-| `ADJUDICATE_BACKEND=llm\|score\|auto` | Stage 2 backend (`auto` = LLM if `ANTHROPIC_API_KEY` set, else score) |
-| `ANTHROPIC_API_KEY=...` | enables the Claude adjudicator + supervisory assessments |
+| `ADJUDICATE_BACKEND=llm\|gemini\|score\|auto` | Stage 2 backend (`auto` = Claude if `ANTHROPIC_API_KEY`, else Gemini if `GOOGLE_API_KEY`, else score) |
+| `ASSESS_BACKEND=llm\|gemini\|rules\|auto` | Stage 5 supervisory-assessment backend (same `auto` precedence) |
+| `ANTHROPIC_API_KEY=...` | enables the Claude adjudicator / assessments / live web-search drill-down |
+| `GOOGLE_API_KEY=...` | enables the Gemini adjudicator / assessments / live grounded drill-down |
+| `GEMINI_MODEL=gemini-2.5-flash` | override the Gemini model |
 | `VITE_API_BASE=...` | (frontend build) backend URL in production |
+
+> **Keys are read from the environment only** and never committed. Copy them into
+> a local `.env` (gitignored) or your host's secret manager. The app runs fully
+> with **no keys** — LLM-powered features degrade gracefully (deterministic
+> adjudication, rule-based assessments, data-only chart drill-down,
+> template-based action drafts).
+
+### Choosing the analysis engine
+
+Pick the engine on the **Scoring** page (Deterministic / Claude / Gemini / Auto);
+`GET /api/providers` reports which keys are configured. Switching the engine does
+two things:
+
+1. **Live features** — the chart drill-down and action drafting call the selected
+   provider at request time.
+2. **Adjudication snapshot** — the API serves a *pre-built, engine-matched*
+   dashboard (`dashboard.<engine>.json`) so the **AI-detection ratio itself
+   changes** with the engine. e.g. Gemini = 1,038 AI cases / 41 clusters vs the
+   deterministic score = 1,464 / 44. If an engine has no snapshot, it falls back
+   to the default `dashboard.json`.
+
+**Building an engine snapshot** (re-adjudicates the candidates with that engine):
+
+```bash
+DASHBOARD_OUT=dashboard.gemini.json ADJUDICATE_BACKEND=gemini python build_dashboard.py
+```
+
+Adjudication is **batched** and **resumable** — each candidate's verdict is cached
+(`output/gemini_verdicts.json`) and saved after every batch, so a run interrupted
+by a rate-limit resumes and only judges what's missing. The committed
+`dashboard.gemini.json` is *partial* (~2.6k of 4.8k candidates carry real Gemini
+verdicts; the rest use the deterministic fallback) because the **free-tier daily
+quota is tiny (~20 requests per model)**. Re-run the build when the quota resets,
+cycle models (`GEMINI_MODEL=gemini-2.0-flash`, …), or use a paid key to reach
+100% Gemini. `GEMINI_NO_FETCH=1` rebuilds the snapshot from the cache with no API
+calls.

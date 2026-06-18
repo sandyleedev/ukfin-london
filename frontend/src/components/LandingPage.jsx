@@ -140,7 +140,7 @@ export default function LandingPage({ onLaunch }) {
         {/* Title */}
         <motion.h1
           variants={item}
-          className="text-7xl sm:text-8xl md:text-9xl font-extrabold font-heading tracking-tight text-gradient mb-2 h-36"
+          className="text-6xl sm:text-8xl md:text-9xl font-extrabold font-heading tracking-tight text-gradient mb-2 leading-[1.05] py-3"
         >
           ReguLens
         </motion.h1>

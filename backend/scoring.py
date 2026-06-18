@@ -108,14 +108,19 @@ def _status(cluster: Dict, as_of: datetime) -> str:
     return "STABLE"
 
 
-def score_clusters(clusters: List[Dict], weights: Dict = None) -> List[Dict]:
+def score_clusters(clusters: List[Dict], weights: Dict = None,
+                   reg_relevance: Dict = None) -> List[Dict]:
     """
     Annotate each cluster with severity, severity_band, status, priority, and a
     normalised priority_pct, then return them sorted by priority (desc).
+
+    `reg_relevance` optionally overrides the per-category regulatory-relevance
+    priors (merged over REG_RELEVANCE), so a customer can tune what matters most.
     """
     if not clusters:
         return []
     w = {**DEFAULT_WEIGHTS, **(weights or {})}
+    reg_map = {**REG_RELEVANCE, **(reg_relevance or {})}
 
     max_cases = max(c["cases"] for c in clusters)
     max_growth = max((c["growth_7d"] for c in clusters), default=1) or 1
@@ -127,7 +132,7 @@ def score_clusters(clusters: List[Dict], weights: Dict = None) -> List[Dict]:
         sev = _severity_score(c, max_cases)
         freq_norm = c["cases"] / max_cases if max_cases else 0.0
         growth_norm = min(max(c["growth_7d"], 0) / max_growth, 1.0)
-        reg = REG_RELEVANCE.get(c["category"], 0.5)
+        reg = reg_map.get(c["category"], 0.5)
 
         priority = (
             w["frequency"] * freq_norm
@@ -238,6 +243,52 @@ def build_trend(clusters: List[Dict], window: int = 90) -> List[Dict]:
         out.append({"date": d.isoformat(),
                     "label": d.strftime("%b %d"),
                     **day})
+    return out
+
+
+def build_trend_from_records(clusters: List[Dict], window: int = 185) -> List[Dict]:
+    """Per-day case volume (stacked by the owning cluster's severity band) built
+    from the REAL per-complaint `case_records` dates — not the synthetic
+    `daily_counts`. This keeps the trend chart consistent with the drill-down,
+    which also counts case_records by date, so a visible peak maps to the actual
+    cases behind it.
+
+    Falls back to build_trend() if clusters carry no case_records.
+    """
+    def _day(rec):
+        v = rec.get("date_received")
+        return (str(v)[:10]) if v else None
+
+    days = [d for c in clusters for rec in c.get("case_records", [])
+            if (d := _day(rec))]
+    if not days:
+        return build_trend(clusters, window)
+
+    as_of = datetime.fromisoformat(max(days))
+    series = {}  # iso date -> {critical,high,medium,low}
+    seen = set()
+    for c in clusters:
+        band = c.get("severity_band", "MEDIUM").lower()
+        for rec in c.get("case_records", []):
+            cid = rec.get("complaint_id")
+            if cid and cid in seen:
+                continue
+            if cid:
+                seen.add(cid)
+            d = _day(rec)
+            if not d:
+                continue
+            delta = (as_of.date() - datetime.fromisoformat(d).date()).days
+            if 0 <= delta < window:
+                bucket = series.setdefault(d, {"critical": 0, "high": 0, "medium": 0, "low": 0})
+                bucket[band] = bucket.get(band, 0) + 1
+
+    out = []
+    for i in range(window):
+        day = as_of.date().fromordinal(as_of.date().toordinal() - (window - 1 - i))
+        iso = day.isoformat()
+        counts = series.get(iso, {"critical": 0, "high": 0, "medium": 0, "low": 0})
+        out.append({"date": iso, "label": day.strftime("%b %d"), **counts})
     return out
 
 
