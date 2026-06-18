@@ -23,6 +23,9 @@ build/
 # Regenerable CFPB crawl cache — can be hundreds of MB (over GitHub's 100MB
 # limit). Rebuild with: REFRESH=1 python build_dashboard.py
 backend/output/raw_cache.json
+# Runtime state written by the live API (not build artifacts)
+backend/output/outbox.json
+backend/output/analysis_config.json
 
 # Node
 npm-debug.log*

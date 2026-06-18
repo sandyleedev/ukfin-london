@@ -20,6 +20,8 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
+import live_features
+import llm_providers
 import scoring
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -184,3 +186,133 @@ def alerts(severity: Optional[str] = Query(None), limit: int = Query(30, ge=1, l
 def trend():
     """Alert-volume trend (stacked by severity)."""
     return {"trend": _load().get("trend", [])}
+
+
+# ---------------------------------------------------------------------------
+# Alert methodology (item 4) — single source of truth = scoring constants
+# ---------------------------------------------------------------------------
+
+@app.get("/api/methodology")
+def methodology():
+    """Document how alerts, severity and priority are computed, derived from the
+    scoring module's constants so the UI and the engine never drift apart."""
+    m = scoring.MIN_ALERT_CASES
+    bands = [{"min_score": t, "band": b} for t, b in scoring.SEVERITY_BANDS]
+    return {
+        "alert_types": [
+            {"type": "SPIKE", "severity": "CRITICAL",
+             "trigger": f"7-day growth ≥ +100% AND cases ≥ {m}",
+             "meaning": "Sudden surge in case volume for a harm pattern."},
+            {"type": "ESCALATING", "severity": "cluster band",
+             "trigger": f"status = ESCALATING (growth ≥ +40%) AND cases ≥ {m}",
+             "meaning": "Pattern accelerating fast — catch it early."},
+            {"type": "PERSISTENT/SIMMERING", "severity": "cluster band",
+             "trigger": "status = PERSISTENT (≥30 days old, active in last 14 days)",
+             "meaning": "Entrenched, long-lived harm that isn't resolving."},
+            {"type": "NEW CLUSTER", "severity": "cluster band",
+             "trigger": "first activity within trailing 7 days AND cases ≥ 3",
+             "meaning": "A newly emerging harm pattern."},
+            {"type": "TRIAGE FLAG", "severity": "CRITICAL/HIGH",
+             "trigger": f"severity band CRITICAL or HIGH AND cases ≥ {m}",
+             "meaning": "Severe and large enough to route to a human reviewer."},
+        ],
+        "min_alert_cases": m,
+        "severity": {
+            "formula": "severity = 0.44·cases_norm + 0.31·growth_norm + 0.25·signal_norm",
+            "detail": {
+                "cases_norm": "cluster cases ÷ largest cluster's cases",
+                "growth_norm": "min(max(growth_7d,0) / 200, 1) — +200% ⇒ 1.0",
+                "signal_norm": "count of severe implied signals "
+                               "(no_human, no_explanation, action_without_notice) ÷ 3",
+            },
+            "bands": bands,
+        },
+        "priority": {
+            "formula": "priority = w_freq·frequency + w_sev·severity "
+                       "+ w_grow·growth + w_reg·regulatory_relevance",
+            "note": "All dimensions normalised to [0,1]; weights normalised to sum 1.",
+            "default_weights": scoring.DEFAULT_WEIGHTS,
+            "regulatory_relevance_priors": scoring.REG_RELEVANCE,
+        },
+    }
+
+
+# ---------------------------------------------------------------------------
+# Live chart drill-down (item 5)
+# ---------------------------------------------------------------------------
+
+@app.get("/api/drilldown")
+def drilldown(date: str = Query(..., description="YYYY-MM-DD")):
+    """What actually spiked on `date`: real CFPB case aggregation + best-effort
+    grounded web-news synthesis via the selected analysis engine."""
+    return live_features.drilldown(_load(), date)
+
+
+# ---------------------------------------------------------------------------
+# Analysis engine selection (item 7)
+# ---------------------------------------------------------------------------
+
+@app.get("/api/providers")
+def providers():
+    """Which LLM providers are configured + the currently selected engine."""
+    return llm_providers.providers_status()
+
+
+class EngineChoice(BaseModel):
+    engine: str = Field(description="auto | score | claude | gemini")
+
+
+@app.post("/api/analysis-config")
+def set_analysis_config(choice: EngineChoice):
+    """Set the live analysis engine used by drill-down + action drafting."""
+    try:
+        llm_providers.set_engine(choice.engine)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    return llm_providers.providers_status()
+
+
+@app.get("/api/analysis-config")
+def get_analysis_config():
+    return llm_providers.providers_status()
+
+
+# ---------------------------------------------------------------------------
+# Semi-automated supervisory actions (item 6) — draft + simulated send
+# ---------------------------------------------------------------------------
+
+class DraftRequest(BaseModel):
+    cluster_id: str
+    action: str
+
+
+@app.post("/api/draft-action")
+def draft_action(req: DraftRequest):
+    """Draft a regulation-anchored information request for a recommended action,
+    auto-matched to the firm, via the selected engine (or a template fallback)."""
+    try:
+        return live_features.draft_action(_load(), req.cluster_id, req.action)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+
+
+class SendRequest(BaseModel):
+    cluster_id: Optional[str] = None
+    subject: str
+    body: str
+    recipient: dict
+    legal_basis: Optional[str] = None
+
+
+@app.post("/api/send-action")
+def send_action(req: SendRequest):
+    """Record an action to the file-based outbox. NB: sending is SIMULATED — no
+    real email is dispatched."""
+    return live_features.append_outbox(req.model_dump())
+
+
+@app.get("/api/outbox")
+def outbox():
+    """List items recorded to the (simulated) outbox."""
+    items = live_features.read_outbox()
+    return {"total": len(items), "items": items}

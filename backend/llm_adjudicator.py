@@ -4,7 +4,7 @@ llm_adjudicator.py
 STAGE 2 of the ReguTriage two-stage funnel: precision adjudication of the
 Stage-1 candidates produced by ai_filter.generate_candidates().
 
-Two interchangeable backends:
+Interchangeable backends:
 
   • "llm"   — ask Claude, per candidate, whether the complaint genuinely
               involves AI / automation that affected the consumer. Best recall
@@ -17,7 +17,11 @@ Two interchangeable backends:
               likelihood, thresholded. Zero cost, fully auditable, no network.
               The explainable fallback when no API key is present.
 
-  • "auto"  — pick "llm" when ANTHROPIC_API_KEY is set, else "score".
+  • "gemini" — same per-candidate classification via Google Gemini (JSON
+              output). Needs GOOGLE_API_KEY. Routed through llm_providers.
+
+  • "auto"  — pick "llm" when ANTHROPIC_API_KEY is set, else "gemini" when
+              GOOGLE_API_KEY is set, else "score".
 
 Both backends add the same columns to the candidate DataFrame:
   - ai_related   : bool   (final verdict)
@@ -208,6 +212,56 @@ def _adjudicate_llm(df: pd.DataFrame, max_candidates: int) -> pd.DataFrame:
 
 
 # ---------------------------------------------------------------------------
+# Backend: Gemini adjudication
+# ---------------------------------------------------------------------------
+
+def _adjudicate_gemini(df: pd.DataFrame, max_candidates: int) -> pd.DataFrame:
+    """Per-candidate Google Gemini classification (JSON output).
+
+    Mirrors the LLM backend's contract but routes through llm_providers so the
+    Google SDK/key handling lives in one place. Falls back to the deterministic
+    score backend if Gemini is unavailable.
+    """
+    import llm_providers
+
+    if not llm_providers.have_google():
+        logger.warning("No GOOGLE_API_KEY — falling back to score backend.")
+        return _adjudicate_score(df)
+
+    out = df.copy()
+    if max_candidates and len(out) > max_candidates:
+        logger.info("Capping Gemini adjudication at %d of %d candidates.",
+                    max_candidates, len(out))
+        out = out.head(max_candidates).copy()
+
+    verdicts: List[dict] = []
+    for i, (_, row) in enumerate(out.iterrows(), start=1):
+        v = llm_providers.gemini_json(ADJUDICATION_SYSTEM + (
+            "\n\nReturn ONLY a JSON object: {\"ai_related\": bool, "
+            "\"confidence\": number in [0,1], \"rationale\": string}."),
+            _build_user_prompt(row), max_tokens=300)
+        if not v:
+            verdicts.append({"ai_related": False, "confidence": 0.0,
+                             "rationale": "gemini: no parseable verdict"})
+        else:
+            verdicts.append({
+                "ai_related": bool(v.get("ai_related", False)),
+                "confidence": float(max(0.0, min(1.0, v.get("confidence", 0.0)))),
+                "rationale": "gemini: " + str(v.get("rationale", "")).strip(),
+            })
+        if i % 25 == 0:
+            logger.info("  adjudicated %d/%d ...", i, len(out))
+
+    out["ai_related"] = [v["ai_related"] for v in verdicts]
+    out["confidence"] = [round(v["confidence"], 2) for v in verdicts]
+    out["rationale"] = [v["rationale"] for v in verdicts]
+    out["adjudicator"] = "gemini"
+    logger.info("Gemini adjudication: %d/%d confirmed AI-related.",
+                int(out["ai_related"].sum()), len(out))
+    return out
+
+
+# ---------------------------------------------------------------------------
 # Public entry point
 # ---------------------------------------------------------------------------
 
@@ -216,8 +270,9 @@ def adjudicate(candidates: pd.DataFrame, backend: str = "auto",
     """
     Run Stage-2 adjudication over Stage-1 candidates.
 
-    backend: "auto" (llm if ANTHROPIC_API_KEY else score) | "llm" | "score".
-    max_candidates: cap for the llm backend (0 = no cap). Ignored by score.
+    backend: "auto" | "llm" (Claude) | "gemini" | "score".
+      auto → llm if ANTHROPIC_API_KEY, else gemini if GOOGLE_API_KEY, else score.
+    max_candidates: cap for the LLM backends (0 = no cap). Ignored by score.
 
     Returns the candidate DataFrame with ai_related/confidence/rationale/
     adjudicator columns added. The caller typically filters to ai_related=True.
@@ -227,10 +282,14 @@ def adjudicate(candidates: pd.DataFrame, backend: str = "auto",
 
     chosen = backend
     if backend == "auto":
-        chosen = "llm" if os.environ.get("ANTHROPIC_API_KEY") else "score"
-        if chosen == "score":
-            logger.info("No ANTHROPIC_API_KEY found — using deterministic "
-                        "score backend (set the key to enable LLM adjudication).")
+        if os.environ.get("ANTHROPIC_API_KEY"):
+            chosen = "llm"
+        elif os.environ.get("GOOGLE_API_KEY") or os.environ.get("GEMINI_API_KEY"):
+            chosen = "gemini"
+        else:
+            chosen = "score"
+            logger.info("No LLM key found — using deterministic score backend "
+                        "(set ANTHROPIC_API_KEY or GOOGLE_API_KEY to enable LLM).")
 
     if chosen == "llm":
         try:
@@ -238,6 +297,8 @@ def adjudicate(candidates: pd.DataFrame, backend: str = "auto",
         except ImportError:
             logger.warning("anthropic SDK not installed — falling back to score.")
             return _adjudicate_score(candidates)
+    if chosen == "gemini":
+        return _adjudicate_gemini(candidates, max_candidates)
     return _adjudicate_score(candidates)
 
 

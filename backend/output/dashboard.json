@@ -1839,7 +1839,11 @@
       "priority_pct": 100,
       "assessment": {
         "why_concerning": "CRITICAL severity: 153 consumers affected by the same pattern at CITIBANK, N.A. and others, and it is accelerating fast (+100% in 7 days). Left unaddressed it risks foreseeable harm at scale before any individual complaint is resolved.",
-        "ai_rationale": "Flagged AI/automation-related because complaints explicitly reference automation (algorithm, artificial intelligence, automated decision, automated loop); and the harm fingerprint of automated decisioning (actions taken without notice, automated adverse actions, automated loops, decisions given with no explanation). The pattern is concentrated and repeating across 153 complaints, which is more consistent with a systematic automated process than with isolated human error.",
+        "ai_rationale": [
+          "Complaints explicitly reference automation: algorithm, artificial intelligence, automated decision, automated loop.",
+          "Carries the harm fingerprint of automated decisioning: actions taken without notice, automated adverse actions, automated loops, decisions given with no explanation.",
+          "The pattern repeats across 153 complaints — more consistent with a systematic automated process than with isolated human error."
+        ],
         "consumer_duty": [
           {
             "outcome": "Consumer Support",
@@ -3585,7 +3589,11 @@
       "priority_pct": 81,
       "assessment": {
         "why_concerning": "HIGH severity: 142 consumers affected by the same pattern at CAPITAL ONE FINANCIAL CORPORATION and others, and it is accelerating fast (+50% in 7 days). Left unaddressed it risks foreseeable harm at scale before any individual complaint is resolved.",
-        "ai_rationale": "Flagged AI/automation-related because complaints explicitly reference automation (algorithm, artificial intelligence, automated decision, automated loop); and the harm fingerprint of automated decisioning (actions taken without notice, automated adverse actions, automated loops, decisions given with no explanation). The pattern is concentrated and repeating across 142 complaints, which is more consistent with a systematic automated process than with isolated human error.",
+        "ai_rationale": [
+          "Complaints explicitly reference automation: algorithm, artificial intelligence, automated decision, automated loop.",
+          "Carries the harm fingerprint of automated decisioning: actions taken without notice, automated adverse actions, automated loops, decisions given with no explanation.",
+          "The pattern repeats across 142 complaints — more consistent with a systematic automated process than with isolated human error."
+        ],
         "consumer_duty": [
           {
             "outcome": "Consumer Support",
@@ -4433,7 +4441,11 @@
       "priority_pct": 73,
       "assessment": {
         "why_concerning": "HIGH severity: 60 consumers affected by the same pattern at CITIBANK, N.A. and others, and it is accelerating fast (+100% in 7 days). Left unaddressed it risks foreseeable harm at scale before any individual complaint is resolved.",
-        "ai_rationale": "Flagged AI/automation-related because complaints explicitly reference automation (algorithm, artificial intelligence, automated system, chatbot); and the harm fingerprint of automated decisioning (actions taken without notice, automated adverse actions, automated loops, decisions given with no explanation). The pattern is concentrated and repeating across 60 complaints, which is more consistent with a systematic automated process than with isolated human error.",
+        "ai_rationale": [
+          "Complaints explicitly reference automation: algorithm, artificial intelligence, automated system, chatbot.",
+          "Carries the harm fingerprint of automated decisioning: actions taken without notice, automated adverse actions, automated loops, decisions given with no explanation.",
+          "The pattern repeats across 60 complaints — more consistent with a systematic automated process than with isolated human error."
+        ],
         "consumer_duty": [
           {
             "outcome": "Consumer Support",
@@ -5199,7 +5211,11 @@
       "priority_pct": 70,
       "assessment": {
         "why_concerning": "MEDIUM severity: 53 consumers affected by the same pattern at Chime Financial Inc and others, and it is accelerating fast (+100% in 7 days). Left unaddressed it risks foreseeable harm at scale before any individual complaint is resolved.",
-        "ai_rationale": "Flagged AI/automation-related because complaints explicitly reference automation (algorithm, automated loop, automated system, chatbot); and the harm fingerprint of automated decisioning (actions taken without notice, automated adverse actions, automated loops, decisions given with no explanation). The pattern is concentrated and repeating across 53 complaints, which is more consistent with a systematic automated process than with isolated human error.",
+        "ai_rationale": [
+          "Complaints explicitly reference automation: algorithm, automated loop, automated system, chatbot.",
+          "Carries the harm fingerprint of automated decisioning: actions taken without notice, automated adverse actions, automated loops, decisions given with no explanation.",
+          "The pattern repeats across 53 complaints — more consistent with a systematic automated process than with isolated human error."
+        ],
         "consumer_duty": [
           {
             "outcome": "Consumer Support",
@@ -7302,7 +7318,11 @@
       "priority_pct": 68,
       "assessment": {
         "why_concerning": "HIGH severity: 175 consumers affected by the same pattern at EQUIFAX, INC. and others, and it is persistent and unresolved. Left unaddressed it risks foreseeable harm at scale before any individual complaint is resolved.",
-        "ai_rationale": "Flagged AI/automation-related because complaints explicitly reference automation (automated system, glitch); and the harm fingerprint of automated decisioning (automated adverse actions, decisions given with no explanation, no human reachable). The pattern is concentrated and repeating across 175 complaints, which is more consistent with a systematic automated process than with isolated human error.",
+        "ai_rationale": [
+          "Complaints explicitly reference automation: automated system, glitch.",
+          "Carries the harm fingerprint of automated decisioning: automated adverse actions, decisions given with no explanation, no human reachable.",
+          "The pattern repeats across 175 complaints — more consistent with a systematic automated process than with isolated human error."
+        ],
         "consumer_duty": [
           {
             "outcome": "Products & Services",
@@ -9008,7 +9028,11 @@
       "priority_pct": 66,
       "assessment": {
         "why_concerning": "HIGH severity: 138 consumers affected by the same pattern at Paypal Holdings, Inc and others, and it is persistent and unresolved. Left unaddressed it risks foreseeable harm at scale before any individual complaint is resolved.",
-        "ai_rationale": "Flagged AI/automation-related because complaints explicitly reference automation (algorithm, automated decision, automated system, chatbot); and the harm fingerprint of automated decisioning (actions taken without notice, automated adverse actions, automated loops, decisions given with no explanation). The pattern is concentrated and repeating across 138 complaints, which is more consistent with a systematic automated process than with isolated human error.",
+        "ai_rationale": [
+          "Complaints explicitly reference automation: algorithm, automated decision, automated system, chatbot.",
+          "Carries the harm fingerprint of automated decisioning: actions taken without notice, automated adverse actions, automated loops, decisions given with no explanation.",
+          "The pattern repeats across 138 complaints — more consistent with a systematic automated process than with isolated human error."
+        ],
         "consumer_duty": [
           {
             "outcome": "Consumer Support",
@@ -9668,7 +9692,11 @@
       "priority_pct": 66,
       "assessment": {
         "why_concerning": "MEDIUM severity: 44 consumers affected by the same pattern at SYNCHRONY FINANCIAL and others, and it is accelerating fast (+100% in 7 days). Left unaddressed it risks foreseeable harm at scale before any individual complaint is resolved.",
-        "ai_rationale": "Flagged AI/automation-related because complaints explicitly reference automation (algorithm, automated decision, automated system, computer error); and the harm fingerprint of automated decisioning (automated loops, decisions given with no explanation, no human reachable). The pattern is concentrated and repeating across 44 complaints, which is more consistent with a systematic automated process than with isolated human error.",
+        "ai_rationale": [
+          "Complaints explicitly reference automation: algorithm, automated decision, automated system, computer error.",
+          "Carries the harm fingerprint of automated decisioning: automated loops, decisions given with no explanation, no human reachable.",
+          "The pattern repeats across 44 complaints — more consistent with a systematic automated process than with isolated human error."
+        ],
         "consumer_duty": [
           {
             "outcome": "Consumer Support",
@@ -10081,7 +10109,11 @@
       "priority_pct": 62,
       "assessment": {
         "why_concerning": "MEDIUM severity: 22 consumers affected by the same pattern at WELLS FARGO & COMPANY, and it is accelerating fast (+100% in 7 days). Left unaddressed it risks foreseeable harm at scale before any individual complaint is resolved.",
-        "ai_rationale": "Flagged AI/automation-related because complaints explicitly reference automation (algorithm, automated decision, automated system, glitch); and the harm fingerprint of automated decisioning (actions taken without notice, automated adverse actions, automated loops, decisions given with no explanation). The pattern is concentrated and repeating across 22 complaints, which is more consistent with a systematic automated process than with isolated human error.",
+        "ai_rationale": [
+          "Complaints explicitly reference automation: algorithm, automated decision, automated system, glitch.",
+          "Carries the harm fingerprint of automated decisioning: actions taken without notice, automated adverse actions, automated loops, decisions given with no explanation.",
+          "The pattern repeats across 22 complaints — more consistent with a systematic automated process than with isolated human error."
+        ],
         "consumer_duty": [
           {
             "outcome": "Consumer Support",
@@ -10424,7 +10456,11 @@
       "priority_pct": 57,
       "assessment": {
         "why_concerning": "MEDIUM severity: 15 consumers affected by the same pattern at WELLS FARGO & COMPANY, and it is accelerating fast (+100% in 7 days). Left unaddressed it risks foreseeable harm at scale before any individual complaint is resolved.",
-        "ai_rationale": "Flagged AI/automation-related because complaints explicitly reference automation (algorithm, automated system, glitch); and the harm fingerprint of automated decisioning (automated adverse actions, automated loops, decisions given with no explanation, no human reachable). The pattern is concentrated and repeating across 15 complaints, which is more consistent with a systematic automated process than with isolated human error.",
+        "ai_rationale": [
+          "Complaints explicitly reference automation: algorithm, automated system, glitch.",
+          "Carries the harm fingerprint of automated decisioning: automated adverse actions, automated loops, decisions given with no explanation, no human reachable.",
+          "The pattern repeats across 15 complaints — more consistent with a systematic automated process than with isolated human error."
+        ],
         "consumer_duty": [
           {
             "outcome": "Products & Services",
@@ -11885,7 +11921,11 @@
       "priority_pct": 55,
       "assessment": {
         "why_concerning": "MEDIUM severity: 116 consumers affected by the same pattern at Experian Information Solutions Inc. and others, and it is persistent and unresolved. Left unaddressed it risks foreseeable harm at scale before any individual complaint is resolved.",
-        "ai_rationale": "Flagged AI/automation-related because complaints explicitly reference automation (algorithm, automated system, chatbot, glitch); and the harm fingerprint of automated decisioning (actions taken without notice, automated loops, decisions given with no explanation, no human reachable). The pattern is concentrated and repeating across 116 complaints, which is more consistent with a systematic automated process than with isolated human error.",
+        "ai_rationale": [
+          "Complaints explicitly reference automation: algorithm, automated system, chatbot, glitch.",
+          "Carries the harm fingerprint of automated decisioning: actions taken without notice, automated loops, decisions given with no explanation, no human reachable.",
+          "The pattern repeats across 116 complaints — more consistent with a systematic automated process than with isolated human error."
+        ],
         "consumer_duty": [
           {
             "outcome": "Consumer Support",
@@ -12113,7 +12153,10 @@
       "priority_pct": 43,
       "assessment": {
         "why_concerning": "LOW severity: 5 consumers affected by the same pattern at Experian Information Solutions Inc. and others, and it is accelerating fast (+100% in 7 days). Left unaddressed it risks foreseeable harm at scale before any individual complaint is resolved.",
-        "ai_rationale": "Flagged AI/automation-related because complaints explicitly reference automation (automated system). The pattern is concentrated and repeating across 5 complaints, which is more consistent with a systematic automated process than with isolated human error.",
+        "ai_rationale": [
+          "Complaints explicitly reference automation: automated system.",
+          "The pattern repeats across 5 complaints — more consistent with a systematic automated process than with isolated human error."
+        ],
         "consumer_duty": [
           {
             "outcome": "Products & Services",
@@ -12949,7 +12992,11 @@
       "priority_pct": 41,
       "assessment": {
         "why_concerning": "MEDIUM severity: 60 consumers affected by the same pattern at BANK OF AMERICA, NATIONAL ASSOCIATION and others, and it is persistent and unresolved. Left unaddressed it risks foreseeable harm at scale before any individual complaint is resolved.",
-        "ai_rationale": "Flagged AI/automation-related because complaints explicitly reference automation (algorithm, artificial intelligence, automated loop, automated system); and the harm fingerprint of automated decisioning (actions taken without notice, automated adverse actions, automated loops, decisions given with no explanation). The pattern is concentrated and repeating across 60 complaints, which is more consistent with a systematic automated process than with isolated human error.",
+        "ai_rationale": [
+          "Complaints explicitly reference automation: algorithm, artificial intelligence, automated loop, automated system.",
+          "Carries the harm fingerprint of automated decisioning: actions taken without notice, automated adverse actions, automated loops, decisions given with no explanation.",
+          "The pattern repeats across 60 complaints — more consistent with a systematic automated process than with isolated human error."
+        ],
         "consumer_duty": [
           {
             "outcome": "Consumer Support",
@@ -13568,7 +13615,11 @@
       "priority_pct": 36,
       "assessment": {
         "why_concerning": "LOW severity: 39 consumers affected by the same pattern at JPMORGAN CHASE & CO. and others, and it is persistent and unresolved. Left unaddressed it risks foreseeable harm at scale before any individual complaint is resolved.",
-        "ai_rationale": "Flagged AI/automation-related because complaints explicitly reference automation (algorithm, automated decision, automated loop, automated system); and the harm fingerprint of automated decisioning (actions taken without notice, decisions given with no explanation, no human reachable). The pattern is concentrated and repeating across 39 complaints, which is more consistent with a systematic automated process than with isolated human error.",
+        "ai_rationale": [
+          "Complaints explicitly reference automation: algorithm, automated decision, automated loop, automated system.",
+          "Carries the harm fingerprint of automated decisioning: actions taken without notice, decisions given with no explanation, no human reachable.",
+          "The pattern repeats across 39 complaints — more consistent with a systematic automated process than with isolated human error."
+        ],
         "consumer_duty": [
           {
             "outcome": "Consumer Support",
@@ -14211,7 +14262,11 @@
       "priority_pct": 36,
       "assessment": {
         "why_concerning": "LOW severity: 43 consumers affected by the same pattern at Paypal Holdings, Inc, and it is persistent and unresolved. Left unaddressed it risks foreseeable harm at scale before any individual complaint is resolved.",
-        "ai_rationale": "Flagged AI/automation-related because complaints explicitly reference automation (algorithm, automated decision, automated loop, automated system); and the harm fingerprint of automated decisioning (automated loops, decisions given with no explanation, no human reachable). The pattern is concentrated and repeating across 43 complaints, which is more consistent with a systematic automated process than with isolated human error.",
+        "ai_rationale": [
+          "Complaints explicitly reference automation: algorithm, automated decision, automated loop, automated system.",
+          "Carries the harm fingerprint of automated decisioning: automated loops, decisions given with no explanation, no human reachable.",
+          "The pattern repeats across 43 complaints — more consistent with a systematic automated process than with isolated human error."
+        ],
         "consumer_duty": [
           {
             "outcome": "Consumer Support",
@@ -14711,7 +14766,11 @@
       "priority_pct": 35,
       "assessment": {
         "why_concerning": "LOW severity: 30 consumers affected by the same pattern at Block, Inc., and it is persistent and unresolved. Left unaddressed it risks foreseeable harm at scale before any individual complaint is resolved.",
-        "ai_rationale": "Flagged AI/automation-related because complaints explicitly reference automation (algorithm, automated decision, automated system, chatbot); and the harm fingerprint of automated decisioning (actions taken without notice, automated loops, decisions given with no explanation, no human reachable). The pattern is concentrated and repeating across 30 complaints, which is more consistent with a systematic automated process than with isolated human error.",
+        "ai_rationale": [
+          "Complaints explicitly reference automation: algorithm, automated decision, automated system, chatbot.",
+          "Carries the harm fingerprint of automated decisioning: actions taken without notice, automated loops, decisions given with no explanation, no human reachable.",
+          "The pattern repeats across 30 complaints — more consistent with a systematic automated process than with isolated human error."
+        ],
         "consumer_duty": [
           {
             "outcome": "Consumer Support",
@@ -15479,7 +15538,10 @@
       "priority_pct": 34,
       "assessment": {
         "why_concerning": "LOW severity: 54 consumers affected by the same pattern at TRANSUNION INTERMEDIATE HOLDINGS, INC. and others, and it is persistent and unresolved. Left unaddressed it risks foreseeable harm at scale before any individual complaint is resolved.",
-        "ai_rationale": "Flagged AI/automation-related because the harm fingerprint of automated decisioning (decisions given with no explanation, no human reachable). The pattern is concentrated and repeating across 54 complaints, which is more consistent with a systematic automated process than with isolated human error.",
+        "ai_rationale": [
+          "Carries the harm fingerprint of automated decisioning: decisions given with no explanation, no human reachable.",
+          "The pattern repeats across 54 complaints — more consistent with a systematic automated process than with isolated human error."
+        ],
         "consumer_duty": [
           {
             "outcome": "Consumer Understanding",
@@ -16068,7 +16130,10 @@
       "priority_pct": 31,
       "assessment": {
         "why_concerning": "LOW severity: 38 consumers affected by the same pattern at Paypal Holdings, Inc, and it is persistent and unresolved. Left unaddressed it risks foreseeable harm at scale before any individual complaint is resolved.",
-        "ai_rationale": "Flagged AI/automation-related because the harm fingerprint of automated decisioning (decisions given with no explanation). The pattern is concentrated and repeating across 38 complaints, which is more consistent with a systematic automated process than with isolated human error.",
+        "ai_rationale": [
+          "Carries the harm fingerprint of automated decisioning: decisions given with no explanation.",
+          "The pattern repeats across 38 complaints — more consistent with a systematic automated process than with isolated human error."
+        ],
         "consumer_duty": [
           {
             "outcome": "Consumer Understanding",
@@ -16438,7 +16503,11 @@
       "priority_pct": 31,
       "assessment": {
         "why_concerning": "LOW severity: 18 consumers affected by the same pattern at Rocket Mortgage, LLC and others, and it is persistent and unresolved. Left unaddressed it risks foreseeable harm at scale before any individual complaint is resolved.",
-        "ai_rationale": "Flagged AI/automation-related because complaints explicitly reference automation (algorithm, automated loop, automated system, chatbot); and the harm fingerprint of automated decisioning (automated loops, decisions given with no explanation, no human reachable). The pattern is concentrated and repeating across 18 complaints, which is more consistent with a systematic automated process than with isolated human error.",
+        "ai_rationale": [
+          "Complaints explicitly reference automation: algorithm, automated loop, automated system, chatbot.",
+          "Carries the harm fingerprint of automated decisioning: automated loops, decisions given with no explanation, no human reachable.",
+          "The pattern repeats across 18 complaints — more consistent with a systematic automated process than with isolated human error."
+        ],
         "consumer_duty": [
           {
             "outcome": "Consumer Support",
@@ -17163,7 +17232,10 @@
       "priority_pct": 30,
       "assessment": {
         "why_concerning": "LOW severity: 51 consumers affected by the same pattern at TRANSUNION INTERMEDIATE HOLDINGS, INC. and others, and it is persistent and unresolved. Left unaddressed it risks foreseeable harm at scale before any individual complaint is resolved.",
-        "ai_rationale": "Flagged AI/automation-related because the harm fingerprint of automated decisioning (no human reachable). The pattern is concentrated and repeating across 51 complaints, which is more consistent with a systematic automated process than with isolated human error.",
+        "ai_rationale": [
+          "Carries the harm fingerprint of automated decisioning: no human reachable.",
+          "The pattern repeats across 51 complaints — more consistent with a systematic automated process than with isolated human error."
+        ],
         "consumer_duty": [
           {
             "outcome": "Consumer Support",
@@ -17514,7 +17586,11 @@
       "priority_pct": 28,
       "assessment": {
         "why_concerning": "LOW severity: 16 consumers affected by the same pattern at JPMORGAN CHASE & CO., and it is persistent and unresolved. Left unaddressed it risks foreseeable harm at scale before any individual complaint is resolved.",
-        "ai_rationale": "Flagged AI/automation-related because complaints explicitly reference automation (algorithm, automated system, chatbot, glitch); and the harm fingerprint of automated decisioning (actions taken without notice, automated loops, decisions given with no explanation, no human reachable). The pattern is concentrated and repeating across 16 complaints, which is more consistent with a systematic automated process than with isolated human error.",
+        "ai_rationale": [
+          "Complaints explicitly reference automation: algorithm, automated system, chatbot, glitch.",
+          "Carries the harm fingerprint of automated decisioning: actions taken without notice, automated loops, decisions given with no explanation, no human reachable.",
+          "The pattern repeats across 16 complaints — more consistent with a systematic automated process than with isolated human error."
+        ],
         "consumer_duty": [
           {
             "outcome": "Consumer Support",
@@ -17835,7 +17911,10 @@
       "priority_pct": 27,
       "assessment": {
         "why_concerning": "LOW severity: 13 consumers affected by the same pattern at WELLS FARGO & COMPANY, and it is persistent and unresolved. Left unaddressed it risks foreseeable harm at scale before any individual complaint is resolved.",
-        "ai_rationale": "Flagged AI/automation-related because the harm fingerprint of automated decisioning (automated loops, decisions given with no explanation, no human reachable). The pattern is concentrated and repeating across 13 complaints, which is more consistent with a systematic automated process than with isolated human error.",
+        "ai_rationale": [
+          "Carries the harm fingerprint of automated decisioning: automated loops, decisions given with no explanation, no human reachable.",
+          "The pattern repeats across 13 complaints — more consistent with a systematic automated process than with isolated human error."
+        ],
         "consumer_duty": [
           {
             "outcome": "Consumer Support",
@@ -18198,7 +18277,11 @@
       "priority_pct": 27,
       "assessment": {
         "why_concerning": "LOW severity: 17 consumers affected by the same pattern at Rocket Mortgage, LLC and others, and it is persistent and unresolved. Left unaddressed it risks foreseeable harm at scale before any individual complaint is resolved.",
-        "ai_rationale": "Flagged AI/automation-related because complaints explicitly reference automation (automated system, chatbot); and the harm fingerprint of automated decisioning (no human reachable). The pattern is concentrated and repeating across 17 complaints, which is more consistent with a systematic automated process than with isolated human error.",
+        "ai_rationale": [
+          "Complaints explicitly reference automation: automated system, chatbot.",
+          "Carries the harm fingerprint of automated decisioning: no human reachable.",
+          "The pattern repeats across 17 complaints — more consistent with a systematic automated process than with isolated human error."
+        ],
         "consumer_duty": [
           {
             "outcome": "Consumer Support",
@@ -18496,7 +18579,11 @@
       "priority_pct": 27,
       "assessment": {
         "why_concerning": "LOW severity: 12 consumers affected by the same pattern at CITIBANK, N.A. and others, and it is persistent and unresolved. Left unaddressed it risks foreseeable harm at scale before any individual complaint is resolved.",
-        "ai_rationale": "Flagged AI/automation-related because complaints explicitly reference automation (automated system, chatbot, computer error); and the harm fingerprint of automated decisioning (automated loops, decisions given with no explanation, no human reachable). The pattern is concentrated and repeating across 12 complaints, which is more consistent with a systematic automated process than with isolated human error.",
+        "ai_rationale": [
+          "Complaints explicitly reference automation: automated system, chatbot, computer error.",
+          "Carries the harm fingerprint of automated decisioning: automated loops, decisions given with no explanation, no human reachable.",
+          "The pattern repeats across 12 complaints — more consistent with a systematic automated process than with isolated human error."
+        ],
         "consumer_duty": [
           {
             "outcome": "Consumer Support",
@@ -18763,7 +18850,11 @@
       "priority_pct": 26,
       "assessment": {
         "why_concerning": "LOW severity: 8 consumers affected by the same pattern at SOFI TECHNOLOGIES, INC. and others, and it is persistent and unresolved. Left unaddressed it risks foreseeable harm at scale before any individual complaint is resolved.",
-        "ai_rationale": "Flagged AI/automation-related because complaints explicitly reference automation (automated system, chatbot); and the harm fingerprint of automated decisioning (automated adverse actions, automated loops, decisions given with no explanation, no human reachable). The pattern is concentrated and repeating across 8 complaints, which is more consistent with a systematic automated process than with isolated human error.",
+        "ai_rationale": [
+          "Complaints explicitly reference automation: automated system, chatbot.",
+          "Carries the harm fingerprint of automated decisioning: automated adverse actions, automated loops, decisions given with no explanation, no human reachable.",
+          "The pattern repeats across 8 complaints — more consistent with a systematic automated process than with isolated human error."
+        ],
         "consumer_duty": [
           {
             "outcome": "Products & Services",
@@ -18962,7 +19053,10 @@
       "priority_pct": 24,
       "assessment": {
         "why_concerning": "LOW severity: 2 consumers affected by the same pattern at TRUIST FINANCIAL CORPORATION and others, and it is persistent and unresolved. Left unaddressed it risks foreseeable harm at scale before any individual complaint is resolved.",
-        "ai_rationale": "Flagged AI/automation-related because the harm fingerprint of automated decisioning (automated loops, decisions given with no explanation, no human reachable). The pattern is concentrated and repeating across 2 complaints, which is more consistent with a systematic automated process than with isolated human error.",
+        "ai_rationale": [
+          "Carries the harm fingerprint of automated decisioning: automated loops, decisions given with no explanation, no human reachable.",
+          "The pattern repeats across 2 complaints — more consistent with a systematic automated process than with isolated human error."
+        ],
         "consumer_duty": [
           {
             "outcome": "Consumer Support",
@@ -19339,7 +19433,11 @@
       "priority_pct": 22,
       "assessment": {
         "why_concerning": "LOW severity: 18 consumers affected by the same pattern at CITIBANK, N.A. and others, and it is persistent and unresolved. Left unaddressed it risks foreseeable harm at scale before any individual complaint is resolved.",
-        "ai_rationale": "Flagged AI/automation-related because complaints explicitly reference automation (artificial intelligence, automated system, chatbot, computer error); and the harm fingerprint of automated decisioning (automated loops, no human reachable). The pattern is concentrated and repeating across 18 complaints, which is more consistent with a systematic automated process than with isolated human error.",
+        "ai_rationale": [
+          "Complaints explicitly reference automation: artificial intelligence, automated system, chatbot, computer error.",
+          "Carries the harm fingerprint of automated decisioning: automated loops, no human reachable.",
+          "The pattern repeats across 18 complaints — more consistent with a systematic automated process than with isolated human error."
+        ],
         "consumer_duty": [
           {
             "outcome": "Consumer Support",
@@ -19809,7 +19907,10 @@
       "priority_pct": 22,
       "assessment": {
         "why_concerning": "LOW severity: 28 consumers affected by the same pattern at Portfolio Recovery Associates, LLC and others, and it is persistent and unresolved. Left unaddressed it risks foreseeable harm at scale before any individual complaint is resolved.",
-        "ai_rationale": "Flagged AI/automation-related because complaints explicitly reference automation (algorithm, automated decision, automated system). The pattern is concentrated and repeating across 28 complaints, which is more consistent with a systematic automated process than with isolated human error.",
+        "ai_rationale": [
+          "Complaints explicitly reference automation: algorithm, automated decision, automated system.",
+          "The pattern repeats across 28 complaints — more consistent with a systematic automated process than with isolated human error."
+        ],
         "consumer_duty": [
           {
             "outcome": "Products & Services",
@@ -20227,7 +20328,10 @@
       "priority_pct": 22,
       "assessment": {
         "why_concerning": "LOW severity: 23 consumers affected by the same pattern at EQUIFAX, INC. and others, and it is persistent and unresolved. Left unaddressed it risks foreseeable harm at scale before any individual complaint is resolved.",
-        "ai_rationale": "Flagged AI/automation-related because the harm fingerprint of automated decisioning (decisions given with no explanation). The pattern is concentrated and repeating across 23 complaints, which is more consistent with a systematic automated process than with isolated human error.",
+        "ai_rationale": [
+          "Carries the harm fingerprint of automated decisioning: decisions given with no explanation.",
+          "The pattern repeats across 23 complaints — more consistent with a systematic automated process than with isolated human error."
+        ],
         "consumer_duty": [
           {
             "outcome": "Consumer Understanding",
@@ -20476,7 +20580,11 @@
       "priority_pct": 22,
       "assessment": {
         "why_concerning": "LOW severity: 8 consumers affected by the same pattern at TOYOTA MOTOR CREDIT CORPORATION and others, and it is persistent and unresolved. Left unaddressed it risks foreseeable harm at scale before any individual complaint is resolved.",
-        "ai_rationale": "Flagged AI/automation-related because complaints explicitly reference automation (automated system, chatbot); and the harm fingerprint of automated decisioning (automated loops, decisions given with no explanation, no human reachable). The pattern is concentrated and repeating across 8 complaints, which is more consistent with a systematic automated process than with isolated human error.",
+        "ai_rationale": [
+          "Complaints explicitly reference automation: automated system, chatbot.",
+          "Carries the harm fingerprint of automated decisioning: automated loops, decisions given with no explanation, no human reachable.",
+          "The pattern repeats across 8 complaints — more consistent with a systematic automated process than with isolated human error."
+        ],
         "consumer_duty": [
           {
             "outcome": "Consumer Support",
@@ -20739,7 +20847,10 @@
       "priority_pct": 22,
       "assessment": {
         "why_concerning": "LOW severity: 9 consumers affected by the same pattern at Shellpoint Partners, LLC and others, and it is persistent and unresolved. Left unaddressed it risks foreseeable harm at scale before any individual complaint is resolved.",
-        "ai_rationale": "Flagged AI/automation-related because complaints explicitly reference automation (automated system). The pattern is concentrated and repeating across 9 complaints, which is more consistent with a systematic automated process than with isolated human error.",
+        "ai_rationale": [
+          "Complaints explicitly reference automation: automated system.",
+          "The pattern repeats across 9 complaints — more consistent with a systematic automated process than with isolated human error."
+        ],
         "consumer_duty": [
           {
             "outcome": "Products & Services",
@@ -20942,7 +21053,11 @@
       "priority_pct": 21,
       "assessment": {
         "why_concerning": "LOW severity: 4 consumers affected by the same pattern at NAVY FEDERAL CREDIT UNION and others, and it is persistent and unresolved. Left unaddressed it risks foreseeable harm at scale before any individual complaint is resolved.",
-        "ai_rationale": "Flagged AI/automation-related because complaints explicitly reference automation (automated system, chatbot); and the harm fingerprint of automated decisioning (no human reachable). The pattern is concentrated and repeating across 4 complaints, which is more consistent with a systematic automated process than with isolated human error.",
+        "ai_rationale": [
+          "Complaints explicitly reference automation: automated system, chatbot.",
+          "Carries the harm fingerprint of automated decisioning: no human reachable.",
+          "The pattern repeats across 4 complaints — more consistent with a systematic automated process than with isolated human error."
+        ],
         "consumer_duty": [
           {
             "outcome": "Consumer Support",
@@ -21199,7 +21314,10 @@
       "priority_pct": 21,
       "assessment": {
         "why_concerning": "LOW severity: 8 consumers affected by the same pattern at Mr. Cooper Group Inc. and others, and it is persistent and unresolved. Left unaddressed it risks foreseeable harm at scale before any individual complaint is resolved.",
-        "ai_rationale": "Flagged AI/automation-related because complaints explicitly reference automation (automated system). The pattern is concentrated and repeating across 8 complaints, which is more consistent with a systematic automated process than with isolated human error.",
+        "ai_rationale": [
+          "Complaints explicitly reference automation: automated system.",
+          "The pattern repeats across 8 complaints — more consistent with a systematic automated process than with isolated human error."
+        ],
         "consumer_duty": [
           {
             "outcome": "Products & Services",
@@ -21400,7 +21518,11 @@
       "priority_pct": 21,
       "assessment": {
         "why_concerning": "LOW severity: 3 consumers affected by the same pattern at A-1 Premium Acceptance, Inc. and others, and it is persistent and unresolved. Left unaddressed it risks foreseeable harm at scale before any individual complaint is resolved.",
-        "ai_rationale": "Flagged AI/automation-related because complaints explicitly reference automation (automated system); and the harm fingerprint of automated decisioning (automated loops, no human reachable). The pattern is concentrated and repeating across 3 complaints, which is more consistent with a systematic automated process than with isolated human error.",
+        "ai_rationale": [
+          "Complaints explicitly reference automation: automated system.",
+          "Carries the harm fingerprint of automated decisioning: automated loops, no human reachable.",
+          "The pattern repeats across 3 complaints — more consistent with a systematic automated process than with isolated human error."
+        ],
         "consumer_duty": [
           {
             "outcome": "Consumer Support",
@@ -21646,7 +21768,10 @@
       "priority_pct": 21,
       "assessment": {
         "why_concerning": "LOW severity: 7 consumers affected by the same pattern at Mr. Cooper Group Inc. and others, and it is persistent and unresolved. Left unaddressed it risks foreseeable harm at scale before any individual complaint is resolved.",
-        "ai_rationale": "Flagged AI/automation-related because complaints explicitly reference automation (automated system). The pattern is concentrated and repeating across 7 complaints, which is more consistent with a systematic automated process than with isolated human error.",
+        "ai_rationale": [
+          "Complaints explicitly reference automation: automated system.",
+          "The pattern repeats across 7 complaints — more consistent with a systematic automated process than with isolated human error."
+        ],
         "consumer_duty": [
           {
             "outcome": "Products & Services",
@@ -21859,7 +21984,11 @@
       "priority_pct": 18,
       "assessment": {
         "why_concerning": "LOW severity: 5 consumers affected by the same pattern at SANTANDER HOLDINGS USA, INC. and others, and it is persistent and unresolved. Left unaddressed it risks foreseeable harm at scale before any individual complaint is resolved.",
-        "ai_rationale": "Flagged AI/automation-related because complaints explicitly reference automation (automated system); and the harm fingerprint of automated decisioning (no human reachable). The pattern is concentrated and repeating across 5 complaints, which is more consistent with a systematic automated process than with isolated human error.",
+        "ai_rationale": [
+          "Complaints explicitly reference automation: automated system.",
+          "Carries the harm fingerprint of automated decisioning: no human reachable.",
+          "The pattern repeats across 5 complaints — more consistent with a systematic automated process than with isolated human error."
+        ],
         "consumer_duty": [
           {
             "outcome": "Consumer Support",
@@ -22065,7 +22194,11 @@
       "priority_pct": 17,
       "assessment": {
         "why_concerning": "LOW severity: 4 consumers affected by the same pattern at Westlake Services, LLC and others, and it is persistent and unresolved. Left unaddressed it risks foreseeable harm at scale before any individual complaint is resolved.",
-        "ai_rationale": "Flagged AI/automation-related because complaints explicitly reference automation (automated system); and the harm fingerprint of automated decisioning (decisions given with no explanation). The pattern is concentrated and repeating across 4 complaints, which is more consistent with a systematic automated process than with isolated human error.",
+        "ai_rationale": [
+          "Complaints explicitly reference automation: automated system.",
+          "Carries the harm fingerprint of automated decisioning: decisions given with no explanation.",
+          "The pattern repeats across 4 complaints — more consistent with a systematic automated process than with isolated human error."
+        ],
         "consumer_duty": [
           {
             "outcome": "Consumer Understanding",
@@ -22276,7 +22409,10 @@
       "priority_pct": 15,
       "assessment": {
         "why_concerning": "LOW severity: 5 consumers affected by the same pattern at MOHELA and others, and it is persistent and unresolved. Left unaddressed it risks foreseeable harm at scale before any individual complaint is resolved.",
-        "ai_rationale": "Flagged AI/automation-related because complaints explicitly reference automation (automated system). The pattern is concentrated and repeating across 5 complaints, which is more consistent with a systematic automated process than with isolated human error.",
+        "ai_rationale": [
+          "Complaints explicitly reference automation: automated system.",
+          "The pattern repeats across 5 complaints — more consistent with a systematic automated process than with isolated human error."
+        ],
         "consumer_duty": [
           {
             "outcome": "Products & Services",
@@ -22485,7 +22621,10 @@
       "priority_pct": 15,
       "assessment": {
         "why_concerning": "LOW severity: 4 consumers affected by the same pattern at MOHELA and others, and it is persistent and unresolved. Left unaddressed it risks foreseeable harm at scale before any individual complaint is resolved.",
-        "ai_rationale": "Flagged AI/automation-related because complaints explicitly reference automation (automated loop, automated system). The pattern is concentrated and repeating across 4 complaints, which is more consistent with a systematic automated process than with isolated human error.",
+        "ai_rationale": [
+          "Complaints explicitly reference automation: automated loop, automated system.",
+          "The pattern repeats across 4 complaints — more consistent with a systematic automated process than with isolated human error."
+        ],
         "consumer_duty": [
           {
             "outcome": "Products & Services",
@@ -22683,7 +22822,10 @@
       "priority_pct": 15,
       "assessment": {
         "why_concerning": "LOW severity: 3 consumers affected by the same pattern at PENNYMAC LOAN SERVICES, LLC. and others, and it is persistent and unresolved. Left unaddressed it risks foreseeable harm at scale before any individual complaint is resolved.",
-        "ai_rationale": "Flagged AI/automation-related because complaints explicitly reference automation (artificial intelligence, automated system). The pattern is concentrated and repeating across 3 complaints, which is more consistent with a systematic automated process than with isolated human error.",
+        "ai_rationale": [
+          "Complaints explicitly reference automation: artificial intelligence, automated system.",
+          "The pattern repeats across 3 complaints — more consistent with a systematic automated process than with isolated human error."
+        ],
         "consumer_duty": [
           {
             "outcome": "Products & Services",
@@ -22881,7 +23023,10 @@
       "priority_pct": 15,
       "assessment": {
         "why_concerning": "LOW severity: 3 consumers affected by the same pattern at MOHELA and others, and it is persistent and unresolved. Left unaddressed it risks foreseeable harm at scale before any individual complaint is resolved.",
-        "ai_rationale": "Flagged AI/automation-related because complaints explicitly reference automation (automated system). The pattern is concentrated and repeating across 3 complaints, which is more consistent with a systematic automated process than with isolated human error.",
+        "ai_rationale": [
+          "Complaints explicitly reference automation: automated system.",
+          "The pattern repeats across 3 complaints — more consistent with a systematic automated process than with isolated human error."
+        ],
         "consumer_duty": [
           {
             "outcome": "Products & Services",
@@ -23057,7 +23202,10 @@
       "priority_pct": 15,
       "assessment": {
         "why_concerning": "LOW severity: 2 consumers affected by the same pattern at MOHELA and others, and it is persistent and unresolved. Left unaddressed it risks foreseeable harm at scale before any individual complaint is resolved.",
-        "ai_rationale": "Flagged AI/automation-related because complaints explicitly reference automation (automated system). The pattern is concentrated and repeating across 2 complaints, which is more consistent with a systematic automated process than with isolated human error.",
+        "ai_rationale": [
+          "Complaints explicitly reference automation: automated system.",
+          "The pattern repeats across 2 complaints — more consistent with a systematic automated process than with isolated human error."
+        ],
         "consumer_duty": [
           {
             "outcome": "Products & Services",
@@ -23220,7 +23368,10 @@
       "priority_pct": 14,
       "assessment": {
         "why_concerning": "LOW severity: 1 consumers affected by the same pattern at Nelnet, Inc., and it is persistent and unresolved. Left unaddressed it risks foreseeable harm at scale before any individual complaint is resolved.",
-        "ai_rationale": "Flagged AI/automation-related because complaints explicitly reference automation (automated system). The pattern is concentrated and repeating across 1 complaints, which is more consistent with a systematic automated process than with isolated human error.",
+        "ai_rationale": [
+          "Complaints explicitly reference automation: automated system.",
+          "The pattern repeats across 1 complaints — more consistent with a systematic automated process than with isolated human error."
+        ],
         "consumer_duty": [
           {
             "outcome": "Products & Services",
@@ -23409,7 +23560,10 @@
       "priority_pct": 14,
       "assessment": {
         "why_concerning": "LOW severity: 3 consumers affected by the same pattern at BANK OF AMERICA, NATIONAL ASSOCIATION and others, and it is persistent and unresolved. Left unaddressed it risks foreseeable harm at scale before any individual complaint is resolved.",
-        "ai_rationale": "Flagged AI/automation-related because complaints explicitly reference automation (automated system). The pattern is concentrated and repeating across 3 complaints, which is more consistent with a systematic automated process than with isolated human error.",
+        "ai_rationale": [
+          "Complaints explicitly reference automation: automated system.",
+          "The pattern repeats across 3 complaints — more consistent with a systematic automated process than with isolated human error."
+        ],
         "consumer_duty": [
           {
             "outcome": "Products & Services",
@@ -23585,7 +23739,10 @@
       "priority_pct": 14,
       "assessment": {
         "why_concerning": "LOW severity: 2 consumers affected by the same pattern at U.S. BANCORP and others, and it is persistent and unresolved. Left unaddressed it risks foreseeable harm at scale before any individual complaint is resolved.",
-        "ai_rationale": "Flagged AI/automation-related because complaints explicitly reference automation (automated system). The pattern is concentrated and repeating across 2 complaints, which is more consistent with a systematic automated process than with isolated human error.",
+        "ai_rationale": [
+          "Complaints explicitly reference automation: automated system.",
+          "The pattern repeats across 2 complaints — more consistent with a systematic automated process than with isolated human error."
+        ],
         "consumer_duty": [
           {
             "outcome": "Products & Services",

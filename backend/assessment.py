@@ -14,10 +14,11 @@ For every cluster it answers the questions the FCA mentor asked for:
     basis (s.165 information request, s.166 skilled person, Equality Act
     impact assessment, Consumer Duty outcomes assessment, …).
 
-Two backends (same shape as llm_adjudicator):
-  • "llm"   — Claude reads the cluster's real narratives and reasons about it.
-  • "rules" — a grounded knowledge-base generator (no key, fully auditable).
-  • "auto"  — llm if ANTHROPIC_API_KEY is set, else rules.
+Backends (same shape as llm_adjudicator):
+  • "llm"    — Claude reads the cluster's real narratives and reasons about it.
+  • "gemini" — same, via Google Gemini (needs GOOGLE_API_KEY).
+  • "rules"  — a grounded knowledge-base generator (no key, fully auditable).
+  • "auto"   — llm if ANTHROPIC_API_KEY, else gemini if GOOGLE_API_KEY, else rules.
 
 The estimates are *hypotheses to investigate*, not findings — every mechanism
 carries a likelihood < 1 and the evidence it rests on, so a supervisor can
@@ -130,12 +131,15 @@ def _ctx_text(cluster: Dict) -> str:
     return " ".join([cluster.get("name", "")] + (cluster.get("sample_narratives") or [])).lower()
 
 
-def _ai_rationale(cluster: Dict) -> str:
+def _ai_rationale(cluster: Dict) -> List[str]:
+    """Why we think the harm is AI/automation-driven, as discrete bullet points
+    (the frontend renders these as a bulleted list)."""
     kws = cluster.get("matched_keywords") or []
     sigs = cluster.get("matched_signals") or []
-    bits = []
+    bullets: List[str] = []
     if kws:
-        bits.append(f"complaints explicitly reference automation ({', '.join(kws[:4])})")
+        bullets.append("Complaints explicitly reference automation: "
+                       f"{', '.join(kws[:4])}.")
     if sigs:
         readable = {
             "no_human": "no human reachable", "loop_runaround": "automated loops",
@@ -143,13 +147,14 @@ def _ai_rationale(cluster: Dict) -> str:
             "action_without_notice": "actions taken without notice",
             "auto_adverse_action": "automated adverse actions",
         }
-        bits.append("the harm fingerprint of automated decisioning ("
-                    + ", ".join(readable.get(s, s) for s in sigs[:4]) + ")")
-    base = "; and ".join(bits) if bits else "recurring patterns consistent with automated handling"
-    return (f"Flagged AI/automation-related because {base}. "
-            f"The pattern is concentrated and repeating across {cluster.get('cases', 0)} "
-            f"complaints, which is more consistent with a systematic automated process "
-            f"than with isolated human error.")
+        bullets.append("Carries the harm fingerprint of automated decisioning: "
+                       + ", ".join(readable.get(s, s) for s in sigs[:4]) + ".")
+    if not bullets:
+        bullets.append("Recurring patterns consistent with automated handling.")
+    bullets.append(
+        f"The pattern repeats across {cluster.get('cases', 0)} complaints — more "
+        f"consistent with a systematic automated process than with isolated human error.")
+    return bullets
 
 
 def _why_concerning(cluster: Dict) -> str:
@@ -286,7 +291,8 @@ mechanism a likelihood in [0,1] below 1.
 
 Cover:
 - why_concerning: why this pattern warrants supervisory attention (scale, harm, trend).
-- ai_rationale: why the harm is plausibly AI/automation-driven (cite the cues).
+- ai_rationale: why the harm is plausibly AI/automation-driven, as a list of \
+2–4 short, self-contained bullet points (each one cue/reason), not a paragraph.
 - consumer_duty: which FCA Consumer Duty outcome(s) are at risk — choose from \
 "Consumer Support", "Consumer Understanding", "Products & Services", "Price & Value" \
 — each with a one-line rationale.
@@ -319,7 +325,8 @@ def _assess_llm(cluster: Dict) -> Dict:
 
     class Assessment(BaseModel):
         why_concerning: str
-        ai_rationale: str
+        ai_rationale: List[str] = Field(
+            description="2–4 short bullet points, each a self-contained reason.")
         consumer_duty: List[DutyItem]
         hypotheses: List[Hypothesis]
         actions: List[Action]
@@ -357,6 +364,43 @@ def _assess_llm(cluster: Dict) -> Dict:
     return d
 
 
+def _assess_gemini(cluster: Dict) -> Dict:
+    """Google Gemini supervisory assessment (JSON output), routed through
+    llm_providers. Falls back to the rules backend on any failure."""
+    import llm_providers
+
+    samples = "\n".join(f"- {n}" for n in (cluster.get("sample_narratives") or [])[:3])
+    user = (
+        f"Cluster: {cluster.get('name')}\n"
+        f"Category: {cluster.get('category')}\n"
+        f"Cases: {cluster.get('cases')} | Severity: {cluster.get('severity_band')} | "
+        f"7d growth: {cluster.get('growth_7d')}%\n"
+        f"Firms: {', '.join(cluster.get('companies') or [])}\n"
+        f"Explicit keywords: {', '.join(cluster.get('matched_keywords') or []) or '(none)'}\n"
+        f"Implied signals: {', '.join(cluster.get('matched_signals') or []) or '(none)'}\n\n"
+        f"Sample complaint narratives:\n{samples}\n\n"
+        "Return ONLY a JSON object with keys: why_concerning (string), "
+        "ai_rationale (array of 2-4 short strings), consumer_duty (array of "
+        "{outcome, rationale}), hypotheses (array of {mechanism, likelihood "
+        "in [0,1] below 1, evidence}), actions (array of {action, basis})."
+    )
+    d = llm_providers.gemini_json(ASSESS_SYSTEM, user, max_tokens=1600)
+    if not d or "why_concerning" not in d:
+        out = _assess_rules(cluster)
+        out["generated_by"] = "rules (gemini-fallback)"
+        return out
+    # Normalise: ai_rationale must be a list; clamp likelihoods < 1.
+    if isinstance(d.get("ai_rationale"), str):
+        d["ai_rationale"] = [d["ai_rationale"]]
+    for h in d.get("hypotheses", []):
+        try:
+            h["likelihood"] = round(min(max(float(h.get("likelihood", 0.4)), 0.0), 0.95), 2)
+        except (TypeError, ValueError):
+            h["likelihood"] = 0.4
+    d["generated_by"] = "gemini"
+    return d
+
+
 # ---------------------------------------------------------------------------
 # Public entry point
 # ---------------------------------------------------------------------------
@@ -365,25 +409,32 @@ def assess_clusters(clusters: List[Dict], backend: str = "auto",
                     max_clusters: int = 0) -> List[Dict]:
     """
     Attach an `assessment` dict to each cluster in place and return the list.
-    `max_clusters` caps the LLM backend (0 = all); rules backend assesses all.
+
+    backend: "auto" | "llm" (Claude) | "gemini" | "rules".
+      auto → llm if ANTHROPIC_API_KEY, else gemini if GOOGLE_API_KEY, else rules.
+    `max_clusters` caps the LLM backends (0 = all); rules backend assesses all.
     """
     if not clusters:
         return clusters
 
     chosen = backend
     if backend == "auto":
-        chosen = "llm" if os.environ.get("ANTHROPIC_API_KEY") else "rules"
-        if chosen == "rules":
-            logger.info("No ANTHROPIC_API_KEY — using rule-based supervisory assessment.")
+        if os.environ.get("ANTHROPIC_API_KEY"):
+            chosen = "llm"
+        elif os.environ.get("GOOGLE_API_KEY") or os.environ.get("GEMINI_API_KEY"):
+            chosen = "gemini"
+        else:
+            chosen = "rules"
+            logger.info("No LLM key — using rule-based supervisory assessment.")
 
-    use_llm = chosen == "llm"
+    use_llm = chosen in ("llm", "gemini")
     for i, c in enumerate(clusters):
         if use_llm and (not max_clusters or i < max_clusters):
             try:
-                c["assessment"] = _assess_llm(c)
+                c["assessment"] = _assess_gemini(c) if chosen == "gemini" else _assess_llm(c)
                 continue
             except ImportError:
-                logger.warning("anthropic SDK missing — rules backend.")
+                logger.warning("LLM SDK missing — rules backend.")
                 use_llm = False
             except Exception as exc:  # noqa: BLE001
                 logger.warning("LLM assessment failed on %s: %s — rules fallback.",
