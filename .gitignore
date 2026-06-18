@@ -27,6 +27,8 @@ backend/output/raw_cache.json
 backend/output/outbox.json
 backend/output/analysis_config.json
 backend/output/weights_config.json
+backend/output/config.json
+backend/output/drilldown_cache.json
 
 # Node
 npm-debug.log*

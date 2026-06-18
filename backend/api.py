@@ -31,7 +31,17 @@ import scoring
 HERE = os.path.dirname(os.path.abspath(__file__))
 DASHBOARD_PATH = os.path.join(HERE, "output", "dashboard.json")
 WEIGHTS_PATH = os.path.join(HERE, "output", "weights_config.json")
+CONFIG_PATH = os.path.join(HERE, "output", "config.json")
 NOT_BUILT_MSG = "Dashboard not built yet — run: python build_dashboard.py"
+
+
+def _saved_config() -> dict:
+    """Customer overrides (currently: per-category regulatory-relevance priors)."""
+    try:
+        with open(CONFIG_PATH, "r", encoding="utf-8") as fh:
+            return json.load(fh) or {}
+    except (OSError, json.JSONDecodeError):
+        return {}
 
 
 def _saved_weights() -> Optional[dict]:
@@ -45,15 +55,19 @@ def _saved_weights() -> Optional[dict]:
 
 
 def _apply_saved_weights(data: dict) -> dict:
-    """Re-rank the dashboard's clusters under any saved weights, so a customer's
-    tuned priorities take effect everywhere the clusters are served."""
+    """Re-rank the dashboard's clusters under any saved weights / relevance
+    overrides, so a customer's tuned priorities take effect everywhere the
+    clusters are served."""
     w = _saved_weights()
-    if not w:
+    reg = _saved_config().get("reg_relevance") or None
+    if not w and not reg:
         return data
-    total = sum(w.values()) or 1.0
-    w = {k: v / total for k, v in w.items()}
-    data["clusters"] = scoring.score_clusters(data.get("clusters", []), weights=w)
-    data["weights"] = w
+    if w:
+        total = sum(w.values()) or 1.0
+        w = {k: v / total for k, v in w.items()}
+        data["weights"] = w
+    data["clusters"] = scoring.score_clusters(data.get("clusters", []),
+                                              weights=w or None, reg_relevance=reg)
     return data
 
 app = FastAPI(title="ReguLens — Supervision Intelligence API", version="1.0.0")
@@ -242,6 +256,63 @@ def delete_weights():
         pass
     return {"weights": scoring.DEFAULT_WEIGHTS, "is_custom": False,
             "defaults": scoring.DEFAULT_WEIGHTS}
+
+
+@app.get("/api/config")
+def get_config():
+    """Editable engine config: per-category regulatory-relevance priors.
+    Returns the active (saved-or-default) map plus the built-in defaults."""
+    saved = _saved_config().get("reg_relevance") or {}
+    return {"reg_relevance": {**scoring.REG_RELEVANCE, **saved},
+            "defaults": scoring.REG_RELEVANCE,
+            "is_custom": bool(saved)}
+
+
+class RegRelevanceConfig(BaseModel):
+    reg_relevance: dict
+
+
+@app.put("/api/config")
+def put_config(cfg: RegRelevanceConfig):
+    """Persist per-category regulatory-relevance overrides (0..1), applied live
+    across the dashboard. Only known categories with values in [0,1] are kept."""
+    clean = {}
+    for k, v in (cfg.reg_relevance or {}).items():
+        try:
+            fv = float(v)
+        except (TypeError, ValueError):
+            continue
+        if k in scoring.REG_RELEVANCE and 0.0 <= fv <= 1.0:
+            clean[k] = round(fv, 2)
+    # Drop entries equal to the default so we only store true overrides.
+    overrides = {k: v for k, v in clean.items() if v != scoring.REG_RELEVANCE.get(k)}
+    existing = _saved_config()
+    if overrides:
+        existing["reg_relevance"] = overrides
+    else:
+        existing.pop("reg_relevance", None)
+    os.makedirs(os.path.dirname(CONFIG_PATH), exist_ok=True)
+    with open(CONFIG_PATH, "w", encoding="utf-8") as fh:
+        json.dump(existing, fh)
+    return {"reg_relevance": {**scoring.REG_RELEVANCE, **overrides},
+            "defaults": scoring.REG_RELEVANCE, "is_custom": bool(overrides)}
+
+
+@app.delete("/api/config")
+def delete_config():
+    """Reset regulatory-relevance priors to defaults."""
+    existing = _saved_config()
+    existing.pop("reg_relevance", None)
+    try:
+        if existing:
+            with open(CONFIG_PATH, "w", encoding="utf-8") as fh:
+                json.dump(existing, fh)
+        else:
+            os.remove(CONFIG_PATH)
+    except OSError:
+        pass
+    return {"reg_relevance": scoring.REG_RELEVANCE, "defaults": scoring.REG_RELEVANCE,
+            "is_custom": False}
 
 
 @app.get("/api/alerts")

@@ -1,8 +1,70 @@
 import { useEffect, useMemo, useState } from "react";
-import { Lock, Unlock, RotateCcw, ArrowUp, ArrowDown, Minus, Info, Cpu, Check, Save } from "lucide-react";
+import { Lock, Unlock, RotateCcw, ArrowUp, ArrowDown, Minus, Info, Cpu, Check, Save, ChevronDown } from "lucide-react";
 import { useDashboard } from "../DataContext.jsx";
-import { rescore, fetchProviders, setAnalysisEngine, fetchWeights, saveWeights, resetWeights } from "../api.js";
+import { rescore, fetchProviders, setAnalysisEngine, fetchWeights, saveWeights, resetWeights, fetchConfig, saveConfig, resetConfig } from "../api.js";
 import { Panel, SeverityBadge } from "../ui.jsx";
+
+// Editable per-category regulatory-relevance priors (CRUD → /api/config),
+// applied live across the dashboard. Authorised supervisors only.
+function RelevanceEditor({ authed }) {
+  const [map, setMap] = useState(null);
+  const [isCustom, setIsCustom] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [saveState, setSaveState] = useState("idle");
+
+  useEffect(() => {
+    fetchConfig().then((r) => { setMap(r.reg_relevance); setIsCustom(r.is_custom); }).catch(() => {});
+  }, []);
+
+  if (!map) return null;
+  const cats = Object.keys(map).sort();
+
+  const set = (k, v) => setMap((m) => ({ ...m, [k]: v }));
+  const persist = () => {
+    setSaveState("saving");
+    saveConfig(map).then((r) => { setMap(r.reg_relevance); setIsCustom(r.is_custom); setSaveState("saved"); setTimeout(() => setSaveState("idle"), 1800); }).catch(() => setSaveState("idle"));
+  };
+  const reset = () => resetConfig().then((r) => { setMap(r.reg_relevance); setIsCustom(false); }).catch(() => {});
+
+  return (
+    <div className={`glass rounded-2xl p-5 ${!authed ? "opacity-60" : ""}`}>
+      <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between">
+        <span className="text-sm font-semibold text-ink flex items-center gap-2">
+          Category relevance priors
+          {isCustom && <span className="text-[10px] font-bold uppercase tracking-wider bg-brand/10 text-brand border border-brand/20 px-2 py-0.5 rounded">custom</span>}
+        </span>
+        <ChevronDown className={`w-4 h-4 text-muted transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+      <p className="text-xs text-muted mt-1">How central each category is to the FCA remit (0–1). Feeds the priority score.</p>
+      {open && (
+        <div className="mt-3 space-y-2.5">
+          {cats.map((k) => (
+            <div key={k}>
+              <div className="flex items-center justify-between text-xs mb-0.5">
+                <span className="text-ink">{k}</span>
+                <span className="font-mono font-semibold text-brand">{Number(map[k]).toFixed(2)}</span>
+              </div>
+              <input type="range" min="0" max="1" step="0.05" value={map[k]} disabled={!authed}
+                onChange={(e) => set(k, parseFloat(e.target.value))}
+                className="w-full accent-brand cursor-pointer disabled:cursor-not-allowed" />
+            </div>
+          ))}
+          {authed && (
+            <div className="flex items-center justify-end gap-2 pt-1">
+              <button onClick={reset} className="flex items-center gap-1.5 text-xs font-semibold text-muted hover:text-ink px-3 py-1.5 rounded-lg hover:bg-accent/40 transition-colors">
+                <RotateCcw className="w-3.5 h-3.5" /> Reset
+              </button>
+              <button onClick={persist} disabled={saveState === "saving"} className="flex items-center gap-1.5 text-xs font-semibold text-white bg-brand hover:bg-brand-dark px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50">
+                {saveState === "saved" ? <Check className="w-3.5 h-3.5" /> : <Save className="w-3.5 h-3.5" />}
+                {saveState === "saving" ? "Saving…" : saveState === "saved" ? "Saved — live" : "Save"}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 const ENGINES = [
   { key: "auto", label: "Auto", desc: "Pick the best available provider." },
@@ -240,6 +302,8 @@ export default function Scoring() {
               />
             </div>
           ))}
+
+          <RelevanceEditor authed={authed} />
         </div>
 
         {/* Live re-ranked queue */}

@@ -39,6 +39,21 @@ logger = logging.getLogger("live_features")
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 OUTBOX_PATH = os.path.join(_HERE, "output", "outbox.json")
+DRILLDOWN_CACHE_PATH = os.path.join(_HERE, "output", "drilldown_cache.json")
+
+
+def _load_cache() -> Dict:
+    try:
+        with open(DRILLDOWN_CACHE_PATH, "r", encoding="utf-8") as fh:
+            return json.load(fh)
+    except (OSError, json.JSONDecodeError):
+        return {}
+
+
+def _save_cache(cache: Dict) -> None:
+    os.makedirs(os.path.dirname(DRILLDOWN_CACHE_PATH), exist_ok=True)
+    with open(DRILLDOWN_CACHE_PATH, "w", encoding="utf-8") as fh:
+        json.dump(cache, fh, ensure_ascii=False)
 
 
 # ---------------------------------------------------------------------------
@@ -50,7 +65,18 @@ def _day(s: Optional[str]) -> str:
 
 
 def drilldown(dashboard: Dict, date: str, engine: Optional[str] = None) -> Dict:
-    """Aggregate real case records for `date` (YYYY-MM-DD) + best-effort news."""
+    """Aggregate real case records for `date` (YYYY-MM-DD) + best-effort news.
+
+    Successful LLM results are cached per (date, engine) so repeat clicks are
+    instant and survive provider rate limits. Data-only fallbacks (e.g. a failed
+    LLM call) are NOT cached, so they retry once the quota recovers.
+    """
+    resolved = llm_providers.resolve_engine(engine)
+    cache_key = f"{date}|{resolved}"
+    cache = _load_cache()
+    if cache_key in cache:
+        return {**cache[cache_key], "cached": True}
+
     rows: List[Dict] = []
     seen = set()
     for c in dashboard.get("clusters", []):
@@ -122,6 +148,13 @@ def drilldown(dashboard: Dict, date: str, engine: Optional[str] = None) -> Dict:
             f"concentrated at {firm_str} around {issue_str}. "
             f"(No LLM provider configured — showing data-only analysis. Set an "
             f"analysis engine with a key to enable live news correlation.)")
+
+    # Cache only real LLM syntheses so a transient rate-limit/failure isn't
+    # frozen in as a data-only result.
+    if result["provider"] not in ("data-only",):
+        cache = _load_cache()
+        cache[cache_key] = result
+        _save_cache(cache)
     return result
 
 

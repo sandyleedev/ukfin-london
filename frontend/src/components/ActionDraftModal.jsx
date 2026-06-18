@@ -2,12 +2,14 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Send, Loader2, CheckCircle2, AlertTriangle, FileText, Building2 } from "lucide-react";
 import { draftAction, sendAction } from "../api.js";
+import { useAudience } from "../AudienceContext.jsx";
 
 // Item 6 — semi-automated supervisory action handling.
 // Drafts a regulation-anchored letter for a recommended action, lets the
 // supervisor edit it and the recipient, then records it to the (simulated)
 // outbox. NO real email is sent — this keeps a human firmly in the loop.
 export default function ActionDraftModal({ clusterId, clusterName, action, onClose }) {
+  const { a } = useAudience();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [draft, setDraft] = useState(null);
@@ -66,7 +68,7 @@ export default function ActionDraftModal({ clusterId, clusterName, action, onClo
           <div className="min-w-0">
             <div className="flex items-center gap-2 text-brand mb-1">
               <FileText className="w-4 h-4" strokeWidth={2} />
-              <span className="text-xs font-bold uppercase tracking-wider">Draft supervisory action</span>
+              <span className="text-xs font-bold uppercase tracking-wider">{a.actionTitle}</span>
             </div>
             <h3 className="text-base sm:text-lg font-semibold text-ink leading-snug font-heading truncate">{clusterName}</h3>
           </div>

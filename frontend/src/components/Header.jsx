@@ -1,18 +1,21 @@
 import { useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Boxes, FolderSearch, SlidersHorizontal, HelpCircle } from "lucide-react";
+import { LayoutDashboard, Boxes, FolderSearch, SlidersHorizontal, HelpCircle, Mailbox, Eye } from "lucide-react";
 import reguLensLogo from "../ReguLensLogo.png";
+import { useAudience } from "../AudienceContext.jsx";
 
 const NAV = [
   { to: "/overview", label: "Overview", Icon: LayoutDashboard },
   { to: "/clusters", label: "Clusters", Icon: Boxes },
   { to: "/cases", label: "Cases", Icon: FolderSearch },
   { to: "/scoring", label: "Scoring", Icon: SlidersHorizontal },
+  { to: "/outbox", label: "Actions", Icon: Mailbox },
 ];
 
 export default function Header({ generatedAt }) {
   const [time, setTime] = useState("");
   const navigate = useNavigate();
+  const { mode, setMode, AUDIENCES } = useAudience();
 
   // Live real-time clock updating every second
   useEffect(() => {
@@ -73,8 +76,22 @@ export default function Header({ generatedAt }) {
         ))}
       </nav>
 
-      {/* Right section: tour replay + datafeed indicator + clock */}
-      <div className="ml-auto flex items-center gap-3 sm:gap-6 flex-shrink-0">
+      {/* Right section: audience mode + tour replay + datafeed indicator + clock */}
+      <div className="ml-auto flex items-center gap-2 sm:gap-4 flex-shrink-0">
+        <div className="relative flex items-center" title="Switch audience view">
+          <Eye className="w-3.5 h-3.5 text-[#78ede7] absolute left-2 pointer-events-none" />
+          <select
+            value={mode}
+            onChange={(e) => setMode(e.target.value)}
+            className="appearance-none bg-white/10 border border-[#7accc9]/25 text-[#c7e6e5] text-xs font-semibold rounded-lg pl-7 pr-6 py-1.5 cursor-pointer hover:border-[#78ede7]/60 focus:outline-none transition-colors"
+          >
+            {Object.entries(AUDIENCES).map(([k, v]) => (
+              <option key={k} value={k} className="text-ink">{v.label}</option>
+            ))}
+          </select>
+          <span className="absolute right-2 text-[#c7e6e5]/60 pointer-events-none text-[8px]">▼</span>
+        </div>
+
         <button
           onClick={() => window.dispatchEvent(new Event("regulens:start-tour"))}
           title="Replay the guided tour"

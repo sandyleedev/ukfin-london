@@ -85,6 +85,23 @@ export async function resetWeights() {
   if (!res.ok) throw new Error(`Reset weights failed ${res.status}`);
   return res.json();
 }
+export function fetchConfig() {
+  return getJSON("/api/config");
+}
+export async function saveConfig(reg_relevance) {
+  const res = await fetch(`${API_BASE}/api/config`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ reg_relevance }),
+  });
+  if (!res.ok) throw new Error(`Save config failed ${res.status}`);
+  return res.json();
+}
+export async function resetConfig() {
+  const res = await fetch(`${API_BASE}/api/config`, { method: "DELETE" });
+  if (!res.ok) throw new Error(`Reset config failed ${res.status}`);
+  return res.json();
+}
 
 // Item 6 — semi-automated supervisory actions (draft + simulated send).
 export function draftAction(cluster_id, action) {
@@ -92,4 +109,7 @@ export function draftAction(cluster_id, action) {
 }
 export function sendAction(payload) {
   return postJSON("/api/send-action", payload);
+}
+export function fetchOutbox() {
+  return getJSON("/api/outbox");
 }

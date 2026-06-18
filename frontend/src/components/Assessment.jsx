@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { AlertTriangle, Bot, Scale, Microscope, Wrench, Send } from "lucide-react";
 import ActionDraftModal from "./ActionDraftModal.jsx";
+import { useAudience } from "../AudienceContext.jsx";
 
 // Normalise ai_rationale (backend may send a list of bullets or a legacy
 // paragraph string) into an array of bullet points.
@@ -60,6 +61,7 @@ function LikelihoodBar({ value }) {
 
 export default function Assessment({ assessment, clusterId, clusterName }) {
   const [draftAction, setDraftAction] = useState(null);
+  const { a: audience } = useAudience();
   if (!assessment) return null;
   const a = assessment;
   const bullets = toBullets(a.ai_rationale);
@@ -143,7 +145,7 @@ export default function Assessment({ assessment, clusterId, clusterName }) {
                       className="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-brand hover:bg-brand-dark rounded-lg px-2.5 py-1 transition-colors flex-shrink-0"
                     >
                       <Send className="w-3 h-3" strokeWidth={2} />
-                      Draft &amp; send
+                      {audience.actionCta}
                     </button>
                   )}
                 </div>

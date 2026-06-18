@@ -8,9 +8,12 @@ import TrendChart from "../components/TrendChart.jsx";
 import ClusterDrawer from "../components/ClusterDrawer.jsx";
 import ErrorBoundary from "../components/ErrorBoundary.jsx";
 import Footer from "../components/Footer.jsx";
+import { useAudience } from "../AudienceContext.jsx";
+import { Eye } from "lucide-react";
 
 export default function Overview() {
   const { data } = useDashboard();
+  const { a } = useAudience();
   const navigate = useNavigate();
   const [selectedId, setSelectedId] = useState(null);
 
@@ -28,6 +31,15 @@ export default function Overview() {
 
   return (
     <div className="space-y-6">
+      {/* Audience-mode banner — reframes the same engine per unit. */}
+      <div className="glass rounded-2xl px-5 py-3 flex items-center gap-3" style={{ borderLeft: `3px solid ${a.accent}` }}>
+        <Eye className="w-4 h-4 flex-shrink-0" style={{ color: a.accent }} />
+        <div className="min-w-0">
+          <span className="text-xs font-bold uppercase tracking-wider" style={{ color: a.accent }}>{a.lens}</span>
+          <span className="text-sm text-muted ml-2">{a.blurb}</span>
+        </div>
+      </div>
+
       <div data-tour="kpis">
         <ErrorBoundary>
           <KpiStrip kpis={data.kpis} onKpiClick={handleKpiClick} />

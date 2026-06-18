@@ -23951,7 +23951,7 @@
       "critical": 0,
       "high": 0,
       "medium": 0,
-      "low": 4
+      "low": 2
     },
     {
       "date": "2026-03-02",
@@ -24196,10 +24196,10 @@
     {
       "date": "2026-04-01",
       "label": "Apr 01",
-      "critical": 2,
-      "high": 12,
-      "medium": 4,
-      "low": 2
+      "critical": 1,
+      "high": 6,
+      "medium": 2,
+      "low": 1
     },
     {
       "date": "2026-04-02",
@@ -24436,7 +24436,7 @@
     {
       "date": "2026-05-01",
       "label": "May 01",
-      "critical": 4,
+      "critical": 2,
       "high": 0,
       "medium": 0,
       "low": 0

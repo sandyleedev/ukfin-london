@@ -97,7 +97,9 @@ def run() -> int:
     print("📊 Stage 4: scoring, ranking, alerts, trend...")
     clusters = scoring.score_clusters(clusters)
     alerts = scoring.build_alerts(clusters)
-    trend = scoring.build_trend(clusters)
+    # Trend built from the real per-complaint dates so chart peaks line up with
+    # the click-to-drill-down counts (which also aggregate case_records by date).
+    trend = scoring.build_trend_from_records(clusters)
     kpis = scoring.build_kpis(clusters, total_fetched, total_ai)
 
     # Stage 5: per-cluster supervisory assessment (why concerning / why AI /
