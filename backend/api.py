@@ -81,13 +81,28 @@ app.add_middleware(
 )
 
 
+def _snapshot_path(engine: str) -> str:
+    return os.path.join(HERE, "output", f"dashboard.{engine}.json")
+
+
+def _snapshot_engines() -> set:
+    """Prebuilt, committed engine snapshots available to serve without any key."""
+    return {eng for eng in ("claude", "gemini") if os.path.exists(_snapshot_path(eng))}
+
+
 def _dashboard_path() -> str:
     """Serve the snapshot that matches the selected analysis engine, so toggling
-    to Gemini shows its (different) AI-adjudication of the cases. Falls back to
-    the default score-built dashboard when an engine's snapshot isn't present."""
-    eng = llm_providers.resolve_engine()
+    to Gemini shows its (different) AI-adjudication of the cases.
+
+    Selection is based on the *explicitly chosen* engine (a committed snapshot is
+    a build artifact and needs no live API key). 'auto' resolves to whichever
+    provider has a key. Falls back to the default score-built dashboard when the
+    selected engine has no snapshot."""
+    eng = llm_providers.selected_engine()
+    if eng == "auto":
+        eng = llm_providers.resolve_engine()
     if eng in ("gemini", "claude"):
-        alt = os.path.join(HERE, "output", f"dashboard.{eng}.json")
+        alt = _snapshot_path(eng)
         if os.path.exists(alt):
             return alt
     return DASHBOARD_PATH
@@ -407,10 +422,22 @@ def drilldown(date: str = Query(..., description="YYYY-MM-DD")):
 # Analysis engine selection (item 7)
 # ---------------------------------------------------------------------------
 
+def _providers_payload() -> dict:
+    """providers_status() augmented with which engines have a prebuilt snapshot,
+    so the UI can offer them even on a keyless deploy (e.g. Render free tier)."""
+    status = llm_providers.providers_status()
+    snaps = _snapshot_engines()
+    for eng in ("claude", "gemini"):
+        p = status.get("providers", {}).get(eng)
+        if p is not None:
+            p["snapshot"] = eng in snaps
+    return status
+
+
 @app.get("/api/providers")
 def providers():
     """Which LLM providers are configured + the currently selected engine."""
-    return llm_providers.providers_status()
+    return _providers_payload()
 
 
 class EngineChoice(BaseModel):
@@ -424,12 +451,12 @@ def set_analysis_config(choice: EngineChoice):
         llm_providers.set_engine(choice.engine)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
-    return llm_providers.providers_status()
+    return _providers_payload()
 
 
 @app.get("/api/analysis-config")
 def get_analysis_config():
-    return llm_providers.providers_status()
+    return _providers_payload()
 
 
 # ---------------------------------------------------------------------------
