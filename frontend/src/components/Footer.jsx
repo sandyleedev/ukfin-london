@@ -1,13 +1,14 @@
 import { Building2, Landmark, ShieldCheck, LineChart, Banknote } from "lucide-react";
 
 // Standard site footer with simulated partner/customer wordmarks.
-// These firms are fictional placeholders for demo purposes only.
+// Names are coined, fictional placeholders for demo purposes only and are not
+// intended to reference any real organisation or registered trademark.
 const PARTNERS = [
-  { name: "NorthBank", Icon: Landmark },
-  { name: "Veritas Audit", Icon: ShieldCheck },
-  { name: "Lumen Capital", Icon: LineChart },
-  { name: "FairPay", Icon: Banknote },
-  { name: "Meridian Trust", Icon: Building2 },
+  { name: "Acme Retail Bank", Icon: Landmark },
+  { name: "Sample Assurance Co.", Icon: ShieldCheck },
+  { name: "Examplar Capital", Icon: LineChart },
+  { name: "Demo Payments", Icon: Banknote },
+  { name: "Placeholder Trust", Icon: Building2 },
 ];
 
 export default function Footer() {
@@ -29,7 +30,7 @@ export default function Footer() {
         <span className="hidden sm:inline text-line">·</span>
         <span>A new lens to view financial regulation</span>
         <span className="hidden sm:inline text-line">·</span>
-        <span className="text-muted/50">Demo — partner names are illustrative</span>
+        <span className="text-muted/50">Demo — partner names are fictional &amp; illustrative only</span>
       </div>
     </footer>
   );

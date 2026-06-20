@@ -103,7 +103,12 @@ function AnalysisEngineCard({ onEngineChange }) {
       </p>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {ENGINES.map((e) => {
-          const avail = e.key === "auto" || status?.providers?.[e.key]?.available;
+          const p = status?.providers?.[e.key];
+          const hasKey = !!p?.available;
+          const hasSnapshot = !!p?.snapshot;
+          // Selectable when a live key is configured OR a prebuilt snapshot exists
+          // (the committed dashboard.<engine>.json needs no key to be shown).
+          const avail = e.key === "auto" || hasKey || hasSnapshot;
           const active = selected === e.key;
           return (
             <button
@@ -122,8 +127,8 @@ function AnalysisEngineCard({ onEngineChange }) {
               </div>
               <p className="text-[11px] text-muted leading-snug">{e.desc}</p>
               {e.key !== "auto" && (
-                <span className={`mt-1.5 inline-block text-[10px] font-mono px-1.5 py-0.5 rounded ${avail ? "text-low bg-low/10" : "text-muted bg-line/20"}`}>
-                  {avail ? "key configured" : "no key"}
+                <span className={`mt-1.5 inline-block text-[10px] font-mono px-1.5 py-0.5 rounded ${hasKey ? "text-low bg-low/10" : hasSnapshot ? "text-brand bg-brand/10" : "text-muted bg-line/20"}`}>
+                  {hasKey ? "key configured" : hasSnapshot ? "prebuilt snapshot" : "no key"}
                 </span>
               )}
             </button>
@@ -132,8 +137,12 @@ function AnalysisEngineCard({ onEngineChange }) {
       </div>
       {status && (
         <p className="text-[11px] text-muted/70 mt-3">
-          Resolved engine: <span className="font-mono text-ink">{status.resolved}</span>
-          {status.resolved === "score" && " — no LLM key found; live features show data-only output."}
+          Live engine: <span className="font-mono text-ink">{status.resolved}</span>
+          {status.resolved === "score" && (
+            selected === "gemini" || selected === "claude"
+              ? ` — showing the prebuilt ${selected} adjudication snapshot; live drill-down news is data-only until a key is set.`
+              : " — no LLM key found; live features show data-only output."
+          )}
         </p>
       )}
     </div>
