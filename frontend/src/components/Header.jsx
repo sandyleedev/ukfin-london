@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Boxes, FolderSearch, SlidersHorizontal, HelpCircle, Mailbox, Eye } from "lucide-react";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
+import { LayoutDashboard, Boxes, FolderSearch, SlidersHorizontal, HelpCircle, Mailbox, Eye, Menu, X, Home } from "lucide-react";
 import reguLensLogo from "../ReguLensLogo.png";
 import { useAudience } from "../AudienceContext.jsx";
 
@@ -14,8 +14,13 @@ const NAV = [
 
 export default function Header({ generatedAt }) {
   const [time, setTime] = useState("");
+  const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { mode, setMode, AUDIENCES } = useAudience();
+
+  // Close the mobile menu whenever the route changes.
+  useEffect(() => { setMenuOpen(false); }, [location.pathname]);
 
   // Live real-time clock updating every second
   useEffect(() => {
@@ -37,17 +42,27 @@ export default function Header({ generatedAt }) {
       {/* HUD scanning swipe line inside the header bottom */}
       <div className="absolute bottom-0 left-0 w-full h-[1.5px] bg-gradient-to-r from-transparent via-[#78ede7]/50 to-transparent animate-[shimmer_4s_linear_infinite]" />
 
-      {/* Left section: Logo and Title */}
+      {/* Mobile: hamburger toggle (md:hidden) */}
+      <button
+        onClick={() => setMenuOpen((v) => !v)}
+        className="md:hidden flex items-center justify-center w-9 h-9 rounded-lg border border-[#7accc9]/25 text-[#c7e6e5] hover:text-white hover:border-[#78ede7]/60 hover:bg-white/5 transition-all flex-shrink-0"
+        aria-label={menuOpen ? "Close menu" : "Open menu"}
+        aria-expanded={menuOpen}
+      >
+        {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+      </button>
+
+      {/* Left section: Logo (home) — name + ACTIVE badge desktop-only */}
       <div className="flex items-center gap-3">
         <a
           onClick={() => navigate("/")}
-          className="relative w-9 h-9 rounded-xl flex items-center justify-center border border-[#7accc9]/25 cursor-pointer overflow-hidden p-1.5 transition-all duration-300 hover:scale-105 hover:border-[#78ede7]/60 bg-white/10 group"
+          className="relative w-9 h-9 rounded-xl flex items-center justify-center border border-[#7accc9]/25 cursor-pointer overflow-hidden p-1.5 transition-all duration-300 hover:scale-105 hover:border-[#78ede7]/60 bg-white/10 group flex-shrink-0"
           title="Return to Landing Page"
         >
           <div className="absolute -inset-1 bg-[#78ede7]/20 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           <img src={reguLensLogo} alt="ReguLens Logo" className="relative z-10 w-full h-full object-contain" />
         </a>
-        <div className="flex items-center gap-2">
+        <div className="hidden md:flex items-center gap-2">
           <span className="font-extrabold text-base font-heading tracking-tight text-white">ReguLens</span>
           <span className="flex items-center gap-1 text-[8px] font-bold tracking-widest bg-critical/10 text-critical border border-critical/20 px-1.5 py-0.5 rounded-md">
             <span className="w-1.5 h-1.5 rounded-full bg-critical animate-ping" />
@@ -56,8 +71,8 @@ export default function Header({ generatedAt }) {
         </div>
       </div>
 
-      {/* Center section: primary navigation */}
-      <nav data-tour="nav" className="flex items-center gap-1 border-l border-white/15 pl-3 sm:pl-6 sm:ml-2 min-w-0 overflow-x-auto no-scrollbar">
+      {/* Center section: primary navigation (desktop only) */}
+      <nav data-tour="nav" className="hidden md:flex items-center gap-1 border-l border-white/15 pl-3 sm:pl-6 sm:ml-2 min-w-0 overflow-x-auto no-scrollbar">
         {NAV.map(({ to, label, Icon }) => (
           <NavLink
             key={to}
@@ -71,10 +86,41 @@ export default function Header({ generatedAt }) {
             }
           >
             <Icon className="w-4 h-4" strokeWidth={2} />
-            <span className="hidden md:inline">{label}</span>
+            <span className="hidden lg:inline">{label}</span>
           </NavLink>
         ))}
       </nav>
+
+      {/* Mobile dropdown menu */}
+      {menuOpen && (
+        <>
+          <div className="md:hidden fixed inset-0 top-16 bg-black/30 z-40" onClick={() => setMenuOpen(false)} />
+          <nav className="md:hidden fixed top-16 left-0 right-0 bg-[#384250] border-b border-[#0c5c63]/40 shadow-xl z-50 p-3 flex flex-col gap-1 animate-fade-in">
+            <button
+              onClick={() => navigate("/")}
+              className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold text-[#c7e6e5]/80 hover:text-white hover:bg-white/5 transition-all text-left"
+            >
+              <Home className="w-4 h-4" strokeWidth={2} /> Home
+            </button>
+            {NAV.map(({ to, label, Icon }) => (
+              <NavLink
+                key={to}
+                to={to}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold tracking-tight transition-all duration-200 ${
+                    isActive
+                      ? "bg-[#78ede7]/15 text-white border border-[#78ede7]/30"
+                      : "text-[#c7e6e5]/70 hover:text-white hover:bg-white/5 border border-transparent"
+                  }`
+                }
+              >
+                <Icon className="w-4 h-4" strokeWidth={2} />
+                {label}
+              </NavLink>
+            ))}
+          </nav>
+        </>
+      )}
 
       {/* Right section: audience mode + tour replay + datafeed indicator + clock */}
       <div className="ml-auto flex items-center gap-2 sm:gap-4 flex-shrink-0">

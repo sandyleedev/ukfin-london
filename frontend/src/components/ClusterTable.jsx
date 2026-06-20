@@ -106,15 +106,15 @@ export default function ClusterTable({
       className="h-full"
     >
       {/* Dynamic Filter Strip */}
-      <div className="px-6 py-4 border-b border-line/20 bg-white/40 flex items-center justify-between">
+      <div className="px-4 sm:px-6 py-4 border-b border-line/20 bg-white/40 flex flex-wrap items-center gap-3 justify-between">
         {/* Search bar */}
-        <div className="relative">
+        <div className="relative flex-1 min-w-[160px]">
           <input
             type="text"
             placeholder="Search clusters or firms..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 pr-4 py-2 text-sm bg-white/70 border border-line/30 rounded-xl focus:outline-none focus:border-brand/70 focus:ring-1 focus:ring-brand/30 transition-all w-64"
+            className="pl-9 pr-4 py-2 text-sm bg-white/70 border border-line/30 rounded-xl focus:outline-none focus:border-brand/70 focus:ring-1 focus:ring-brand/30 transition-all w-full sm:w-64"
           />
           <span className="absolute left-3 top-2.5 text-muted pointer-events-none">
             <Search className="w-4 h-4 text-muted/60" />
@@ -130,15 +130,84 @@ export default function ClusterTable({
               setSelectedSeverity("ALL");
               setSelectedStatus("ALL");
             }}
-            className="text-xs font-semibold text-brand hover:text-brand-dark px-3 py-1.5 bg-brand/5 border border-brand/20 rounded-xl transition-all"
+            className="text-xs font-semibold text-brand hover:text-brand-dark px-3 py-1.5 bg-brand/5 border border-brand/20 rounded-xl transition-all flex-shrink-0"
           >
             Clear Filters
           </button>
         )}
+
+        {/* Mobile-only filter selects (the table-header selects are hidden on mobile) */}
+        <div className="flex md:hidden flex-wrap gap-2 w-full">
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="flex-1 min-w-[100px] px-2 py-1.5 bg-accent/60 border border-line/30 rounded-lg text-xs font-semibold text-muted focus:outline-none focus:ring-1 focus:ring-brand/30"
+          >
+            {categories.map((cat) => (
+              <option key={cat} value={cat}>{cat === "ALL" ? "All Categories" : cat}</option>
+            ))}
+          </select>
+          <select
+            value={selectedSeverity}
+            onChange={(e) => setSelectedSeverity(e.target.value)}
+            className="flex-1 min-w-[90px] px-2 py-1.5 bg-accent/60 border border-line/30 rounded-lg text-xs font-semibold text-muted focus:outline-none focus:ring-1 focus:ring-brand/30"
+          >
+            <option value="ALL">All Severity</option>
+            <option value="CRITICAL">Critical</option>
+            <option value="HIGH">High</option>
+            <option value="MEDIUM">Medium</option>
+            <option value="LOW">Low</option>
+          </select>
+          <select
+            value={selectedStatus}
+            onChange={(e) => setSelectedStatus(e.target.value)}
+            className="flex-1 min-w-[90px] px-2 py-1.5 bg-accent/60 border border-line/30 rounded-lg text-xs font-semibold text-muted focus:outline-none focus:ring-1 focus:ring-brand/30"
+          >
+            <option value="ALL">All Status</option>
+            <option value="ESCALATING">Escalating</option>
+            <option value="PERSISTENT">Persistent</option>
+            <option value="SIMMERING">Simmering</option>
+            <option value="STABLE">Stable</option>
+          </select>
+        </div>
       </div>
 
-      {/* Main Table */}
-      <table className="w-full min-w-[760px] text-left border-collapse">
+      {/* Mobile card list (md:hidden) */}
+      <div className="md:hidden divide-y divide-line/20">
+        {sortedClusters.length === 0 ? (
+          <div className="px-4 py-12 text-center text-muted text-sm">
+            No matching clusters found. Try clearing your search or filters.
+          </div>
+        ) : (
+          sortedClusters.map((c) => {
+            const active = c.id === selectedId;
+            return (
+              <button
+                key={c.id}
+                onClick={() => onSelect(c.id)}
+                className={`w-full text-left px-4 py-3.5 transition-colors ${active ? "bg-accent border-l-3 border-l-brand" : "active:bg-accent/40"}`}
+              >
+                <div className="flex items-start justify-between gap-2 mb-1.5">
+                  <span className="font-semibold text-ink text-sm leading-snug">{c.name}</span>
+                  <SeverityBadge band={c.severity_band} />
+                </div>
+                {c.companies?.length > 0 && (
+                  <div className="text-xs text-muted truncate mb-2">{c.companies.join(", ")}</div>
+                )}
+                <div className="flex items-center flex-wrap gap-x-3 gap-y-1.5 text-xs">
+                  <span className="text-brand font-medium">{c.category}</span>
+                  <span className="font-mono text-muted">{c.cases.toLocaleString()} cases</span>
+                  <GrowthPill value={c.growth_7d} />
+                  <StatusBadge status={c.status} />
+                </div>
+              </button>
+            );
+          })
+        )}
+      </div>
+
+      {/* Main Table (desktop) */}
+      <table className="hidden md:table w-full min-w-[760px] text-left border-collapse">
         <thead className="sticky top-0 bg-white/90 backdrop-blur-xl z-10">
           <tr className="text-xs uppercase tracking-wider text-muted">
             {cols.map((col) => {
