@@ -47,3 +47,8 @@ body {
   50% { box-shadow: 0 0 0 6px rgba(220, 38, 38, 0); }
 }
 .glow-ring-critical { animation: glow-ring 2s ease-in-out infinite; }
+
+/* Continuous horizontal marquee (e.g. partner wordmarks on the landing). */
+@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.animate-marquee { animation: marquee 28s linear infinite; }
+.marquee-mask { -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); }

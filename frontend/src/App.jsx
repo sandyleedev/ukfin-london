@@ -2,7 +2,7 @@ import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { DataProvider } from "./DataContext.jsx";
 import { AudienceProvider } from "./AudienceContext.jsx";
 import Layout from "./components/Layout.jsx";
-import LandingPage from "./components/LandingPage.jsx";
+import LandingHost from "./components/landings/LandingHost.jsx";
 import Overview from "./pages/Overview.jsx";
 import Clusters from "./pages/Clusters.jsx";
 import Cases from "./pages/Cases.jsx";
@@ -11,7 +11,7 @@ import Outbox from "./pages/Outbox.jsx";
 
 function Landing() {
   const navigate = useNavigate();
-  return <LandingPage onLaunch={() => navigate("/overview")} />;
+  return <LandingHost onLaunch={() => navigate("/overview")} />;
 }
 
 export default function App() {

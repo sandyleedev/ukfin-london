@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Search, CheckCircle2, RotateCcw, ChevronDown, Building2, Calendar, Hash, X } from "lucide-react";
+import { Search, CheckCircle2, RotateCcw, ChevronDown, Building2, Calendar, Hash, X, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 import { useDashboard } from "../DataContext.jsx";
 import { fetchCases } from "../api.js";
 import { Panel, SeverityBadge, fmtTime } from "../ui.jsx";
@@ -29,6 +29,17 @@ export default function Cases() {
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(null);
   const [closed, setClosed] = useState(loadClosed);
+  const [sortField, setSortField] = useState("date"); // date | company | issue | severity | status | id
+  const [sortDirection, setSortDirection] = useState("desc");
+
+  const toggleSort = (field) => {
+    if (sortField === field) {
+      setSortDirection((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortField(field);
+      setSortDirection(field === "company" || field === "issue" ? "asc" : "desc");
+    }
+  };
 
   // Debounce the free-text search box.
   useEffect(() => {
@@ -81,6 +92,35 @@ export default function Cases() {
     });
   }, [cases, statusFilter, closed]);
 
+  const sortedVisible = useMemo(() => {
+    const order = sortDirection === "asc" ? 1 : -1;
+    const sevWeight = { CRITICAL: 4, HIGH: 3, MEDIUM: 2, LOW: 1 };
+    const list = [...visible];
+    list.sort((a, b) => {
+      switch (sortField) {
+        case "date":
+          return ((new Date(a.date_received || 0).getTime()) - (new Date(b.date_received || 0).getTime())) * order;
+        case "company":
+          return (a.company || "").localeCompare(b.company || "") * order;
+        case "issue":
+          return (a.issue || "").localeCompare(b.issue || "") * order;
+        case "severity":
+          return ((sevWeight[a.severity_band] || 0) - (sevWeight[b.severity_band] || 0)) * order;
+        case "status": {
+          // Open (0) sorts before Closed (1) ascending.
+          const sa = closed.has(a.complaint_id) ? 1 : 0;
+          const sb = closed.has(b.complaint_id) ? 1 : 0;
+          return (sa - sb) * order;
+        }
+        case "id":
+          return (String(a.complaint_id).localeCompare(String(b.complaint_id), undefined, { numeric: true })) * order;
+        default:
+          return 0;
+      }
+    });
+    return list;
+  }, [visible, sortField, sortDirection, closed]);
+
   const openCount = cases.filter((c) => !closed.has(c.complaint_id)).length;
   const closedCount = cases.length - openCount;
 
@@ -122,14 +162,14 @@ export default function Cases() {
         className="h-full"
       >
         {/* Filter strip */}
-        <div className="px-6 py-4 border-b border-line/20 bg-white/40 flex flex-wrap items-center gap-3">
-          <div className="relative">
+        <div className="px-4 sm:px-6 py-4 border-b border-line/20 bg-white/40 flex flex-wrap items-center gap-3">
+          <div className="relative flex-1 min-w-[160px]">
             <input
               type="text"
               placeholder="Search narrative, firm, issue, ID…"
               value={rawSearch}
               onChange={(e) => setRawSearch(e.target.value)}
-              className="pl-9 pr-4 py-2 text-sm bg-white/70 border border-line/30 rounded-xl focus:outline-none focus:border-brand/70 focus:ring-1 focus:ring-brand/30 transition-all w-72"
+              className="pl-9 pr-4 py-2 text-sm bg-white/70 border border-line/30 rounded-xl focus:outline-none focus:border-brand/70 focus:ring-1 focus:ring-brand/30 transition-all w-full sm:w-72"
             />
             <Search className="w-4 h-4 text-muted/60 absolute left-3 top-2.5 pointer-events-none" />
           </div>
@@ -152,41 +192,78 @@ export default function Cases() {
             <option value="OPEN">Open only</option>
             <option value="CLOSED">Closed only</option>
           </Select>
+
+          {/* Mobile-only sort control (desktop sorts via table headers) */}
+          <div className="flex md:hidden items-center gap-2 w-full">
+            <span className="text-xs font-semibold text-muted uppercase tracking-wider">Sort</span>
+            <Select value={sortField} onChange={setSortField}>
+              <option value="date">Date</option>
+              <option value="company">Firm</option>
+              <option value="issue">Issue</option>
+              <option value="severity">Severity</option>
+              <option value="status">Status</option>
+              <option value="id">Complaint ID</option>
+            </Select>
+            <button
+              onClick={() => setSortDirection((d) => (d === "asc" ? "desc" : "asc"))}
+              className="flex items-center gap-1 px-3 py-2 bg-accent/60 border border-line/30 rounded-xl text-xs font-semibold text-muted hover:text-ink"
+              title={sortDirection === "asc" ? "Ascending" : "Descending"}
+            >
+              {sortDirection === "asc" ? <ArrowUp className="w-3.5 h-3.5" /> : <ArrowDown className="w-3.5 h-3.5" />}
+            </button>
+          </div>
         </div>
 
         {loading ? (
           <div className="py-16 text-center text-muted text-sm">Loading cases…</div>
-        ) : visible.length === 0 ? (
+        ) : sortedVisible.length === 0 ? (
           <div className="py-16 text-center text-muted text-sm">No matching cases.</div>
         ) : (
-          <table className="w-full min-w-[760px] text-left border-collapse">
-            <thead className="sticky top-0 bg-white/90 backdrop-blur-xl z-10">
-              <tr className="text-xs uppercase tracking-wider text-muted">
-                <th className="font-semibold px-6 py-3 border-b border-line/30">Complaint</th>
-                <th className="font-semibold px-6 py-3 border-b border-line/30">Firm</th>
-                <th className="font-semibold px-6 py-3 border-b border-line/30">Issue</th>
-                <th className="font-semibold px-6 py-3 border-b border-line/30">Severity</th>
-                <th className="font-semibold px-6 py-3 border-b border-line/30">Status</th>
-                <th className="font-semibold px-6 py-3 border-b border-line/30 text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {visible.map((c, idx) => {
-                const isClosed = closed.has(c.complaint_id);
-                const isOpen = expanded === c.complaint_id;
-                return (
-                  <CaseRow
-                    key={`${c.complaint_id}-${idx}`}
-                    c={c}
-                    isClosed={isClosed}
-                    isExpanded={isOpen}
-                    onToggleExpand={() => setExpanded(isOpen ? null : c.complaint_id)}
-                    onToggleClose={() => toggleClose(c.complaint_id)}
-                  />
-                );
-              })}
-            </tbody>
-          </table>
+          <>
+            {/* Mobile card list */}
+            <div className="md:hidden divide-y divide-line/20">
+              {sortedVisible.map((c, idx) => (
+                <CaseCard
+                  key={`${c.complaint_id}-${idx}`}
+                  c={c}
+                  isClosed={closed.has(c.complaint_id)}
+                  isExpanded={expanded === c.complaint_id}
+                  onToggleExpand={() => setExpanded(expanded === c.complaint_id ? null : c.complaint_id)}
+                  onToggleClose={() => toggleClose(c.complaint_id)}
+                />
+              ))}
+            </div>
+
+            {/* Desktop table */}
+            <table className="hidden md:table w-full min-w-[760px] text-left border-collapse">
+              <thead className="sticky top-0 bg-white/90 backdrop-blur-xl z-10">
+                <tr className="text-xs uppercase tracking-wider text-muted">
+                  <SortableTh label="Complaint" field="date" sortField={sortField} sortDirection={sortDirection} onSort={toggleSort} />
+                  <SortableTh label="Firm" field="company" sortField={sortField} sortDirection={sortDirection} onSort={toggleSort} />
+                  <SortableTh label="Issue" field="issue" sortField={sortField} sortDirection={sortDirection} onSort={toggleSort} />
+                  <SortableTh label="Severity" field="severity" sortField={sortField} sortDirection={sortDirection} onSort={toggleSort} />
+                  <SortableTh label="Status" field="status" sortField={sortField} sortDirection={sortDirection} onSort={toggleSort} />
+                  <th className="font-semibold px-6 py-3 border-b border-line/30 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sortedVisible.map((c, idx) => {
+                  const isClosed = closed.has(c.complaint_id);
+                  const isOpen = expanded === c.complaint_id;
+                  return (
+                    <CaseRow
+                      key={`${c.complaint_id}-${idx}`}
+                      c={c}
+                      isClosed={isClosed}
+                      isExpanded={isOpen}
+                      onToggleExpand={() => setExpanded(isOpen ? null : c.complaint_id)}
+                      onToggleClose={() => toggleClose(c.complaint_id)}
+                    />
+                  );
+                })}
+              </tbody>
+            </table>
+          </>
         )}
       </Panel>
     </div>
@@ -264,6 +341,76 @@ function CaseRow({ c, isClosed, isExpanded, onToggleExpand, onToggleClose }) {
         </tr>
       )}
     </>
+  );
+}
+
+function SortableTh({ label, field, sortField, sortDirection, onSort }) {
+  const active = sortField === field;
+  return (
+    <th
+      onClick={() => onSort(field)}
+      className="font-semibold px-6 py-3 border-b border-line/30 whitespace-nowrap cursor-pointer select-none hover:text-ink hover:bg-accent/35 group transition-colors"
+    >
+      <div className="flex items-center gap-1.5">
+        <span>{label}</span>
+        {!active ? (
+          <ArrowUpDown className="w-3.5 h-3.5 opacity-30 group-hover:opacity-60 transition-opacity" />
+        ) : sortDirection === "asc" ? (
+          <ArrowUp className="w-3.5 h-3.5 text-brand" />
+        ) : (
+          <ArrowDown className="w-3.5 h-3.5 text-brand" />
+        )}
+      </div>
+    </th>
+  );
+}
+
+function CaseCard({ c, isClosed, isExpanded, onToggleExpand, onToggleClose }) {
+  return (
+    <div className={`px-4 py-3.5 transition-colors ${isClosed ? "opacity-50 bg-low/[0.03]" : ""}`}>
+      <button onClick={onToggleExpand} className="w-full text-left">
+        <div className="flex items-start justify-between gap-2 mb-1.5">
+          <div className="flex items-center gap-1.5 font-medium text-ink text-sm min-w-0">
+            <Building2 className="w-3.5 h-3.5 text-muted flex-shrink-0" />
+            <span className="truncate">{c.company || "—"}</span>
+          </div>
+          <SeverityBadge band={c.severity_band} />
+        </div>
+        <div className="text-sm text-ink mb-1">{c.issue || "—"}</div>
+        <div className="text-xs text-muted mb-2 truncate">{c.cluster_name}</div>
+        <div className="flex items-center flex-wrap gap-x-3 gap-y-1 text-xs text-muted/80 font-mono">
+          <span className="flex items-center gap-1"><Hash className="w-3 h-3" />{c.complaint_id}</span>
+          <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{fmtTime(c.date_received)}</span>
+          {isClosed ? (
+            <span className="inline-flex items-center gap-1 font-semibold text-low"><CheckCircle2 className="w-3 h-3" />Closed</span>
+          ) : (
+            <span className="inline-flex items-center gap-1 font-semibold text-high"><span className="w-1.5 h-1.5 rounded-full bg-high" />Open</span>
+          )}
+        </div>
+      </button>
+
+      {isExpanded && (
+        <div className="mt-3 pt-3 border-t border-line/20">
+          <div className="grid grid-cols-1 gap-2 mb-3 text-xs">
+            <Field label="Product" value={c.product} />
+            <Field label="Sub-product" value={c.sub_product} />
+            <Field label="Company response" value={c.company_response} />
+          </div>
+          <p className="text-sm text-muted leading-relaxed glass-subtle rounded-xl p-3">
+            "{c.narrative}{c.narrative?.length >= 1200 ? "…" : ""}"
+          </p>
+        </div>
+      )}
+
+      <button
+        onClick={onToggleClose}
+        className={`mt-3 w-full inline-flex items-center justify-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg border transition-all ${
+          isClosed ? "text-muted border-line/40" : "text-white bg-brand border-transparent"
+        }`}
+      >
+        {isClosed ? <><RotateCcw className="w-3.5 h-3.5" /> Reopen</> : <><CheckCircle2 className="w-3.5 h-3.5" /> Close case</>}
+      </button>
+    </div>
   );
 }
 

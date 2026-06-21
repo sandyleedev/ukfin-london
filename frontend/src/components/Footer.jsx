@@ -14,10 +14,11 @@ const PARTNERS = [
 export default function Footer() {
   return (
     <footer className="mt-8 pt-6 pb-8 border-t border-line/30">
-      <div className="text-center text-[10px] uppercase tracking-[0.2em] text-muted/60 mb-5">
+      {/* Partner wordmark illustration is desktop-only. */}
+      <div className="hidden md:block text-center text-[10px] uppercase tracking-[0.2em] text-muted/60 mb-5">
         Trusted by supervision &amp; compliance teams
       </div>
-      <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4 mb-6 opacity-60">
+      <div className="hidden md:flex flex-wrap items-center justify-center gap-x-8 gap-y-4 mb-6 opacity-60">
         {PARTNERS.map(({ name, Icon }) => (
           <div key={name} className="flex items-center gap-2 text-muted grayscale hover:grayscale-0 hover:text-brand transition-all duration-300">
             <Icon className="w-4 h-4" strokeWidth={2} />

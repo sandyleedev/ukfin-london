@@ -77,7 +77,7 @@ export default function LiveAlerts({ alerts }) {
         </div>
       }
       right={
-        <div className="flex gap-1 bg-accent/50 p-1 rounded-xl border border-line/30 flex-wrap max-w-[400px] md:max-w-none">
+        <div className="flex gap-1 bg-accent/50 p-1 rounded-xl border border-line/30 flex-nowrap overflow-x-auto no-scrollbar w-full md:w-auto">
           {FILTERS.map((f) => {
             const colors = FILTER_CLASSES[f] || FILTER_CLASSES.ALL;
             const active = filter === f;
@@ -85,7 +85,7 @@ export default function LiveAlerts({ alerts }) {
               <button
                 key={f}
                 onClick={() => handleFilterChange(f)}
-                className={`text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded-lg transition-all duration-200 border ${active ? colors.active : colors.inactive
+                className={`text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded-lg transition-all duration-200 border whitespace-nowrap flex-shrink-0 ${active ? colors.active : colors.inactive
                   }`}
               >
                 {f}

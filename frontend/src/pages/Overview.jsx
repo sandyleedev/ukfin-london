@@ -40,7 +40,8 @@ export default function Overview() {
         </div>
       </div>
 
-      <div data-tour="kpis">
+      {/* KPI strip is desktop-only — mobile goes straight to the rankings. */}
+      <div data-tour="kpis" className="hidden md:block">
         <ErrorBoundary>
           <KpiStrip kpis={data.kpis} onKpiClick={handleKpiClick} />
         </ErrorBoundary>

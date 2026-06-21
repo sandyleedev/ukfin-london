@@ -1,4 +1,4 @@
-import { Panel, SeverityBadge, GrowthPill } from "../ui.jsx";
+import { Panel, SeverityBadge, GrowthPill, SEVERITY_HEX } from "../ui.jsx";
 
 export default function ClusterRankings({ clusters, selectedId, onSelect }) {
   return (
@@ -7,10 +7,13 @@ export default function ClusterRankings({ clusters, selectedId, onSelect }) {
       subtitle={
         <div className="flex flex-col items-start gap-2 mt-1 text-xs text-muted">
           <div>ranked by weighted priority · freq × severity × growth × reg-relevance</div>
-          <div className="flex flex-wrap items-center gap-1.5">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
             <span>severity:</span>
             {["CRITICAL", "HIGH", "MEDIUM", "LOW"].map((band) => (
-              <SeverityBadge key={band} band={band} />
+              <span key={band} className="inline-flex items-center gap-1 text-[10px] font-semibold" style={{ color: SEVERITY_HEX[band] }}>
+                <span className="w-1.5 h-1.5 rounded-full" style={{ background: SEVERITY_HEX[band] }} />
+                {band}
+              </span>
             ))}
           </div>
         </div>
@@ -37,7 +40,7 @@ export default function ClusterRankings({ clusters, selectedId, onSelect }) {
                     <span className="text-xs text-muted">/ 7 days</span>
                     <SeverityBadge band={c.severity_band} />
                   </div>
-                  <p className="text-base font-semibold text-ink leading-snug truncate">{c.name}</p>
+                  <p className="text-base font-semibold text-ink leading-snug line-clamp-2">{c.name}</p>
                   <div className="flex flex-wrap items-center gap-2.5 text-sm text-muted mt-2">
                     <span className="font-medium text-brand whitespace-nowrap">{c.category}</span>
                     <span className="text-line">·</span>
