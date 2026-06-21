@@ -14,4 +14,4 @@ export const LANDINGS = {
 };
 
 // 👇 The single switch that controls which homepage ships.
-export const DEFAULT_LANDING = "cinematic";
+export const DEFAULT_LANDING = "minimal";
