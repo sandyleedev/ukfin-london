@@ -1,4 +1,4 @@
-import { Panel, SeverityBadge, GrowthPill } from "../ui.jsx";
+import { Panel, SeverityBadge, GrowthPill, SEVERITY_HEX } from "../ui.jsx";
 
 export default function ClusterRankings({ clusters, selectedId, onSelect }) {
   return (
@@ -7,10 +7,13 @@ export default function ClusterRankings({ clusters, selectedId, onSelect }) {
       subtitle={
         <div className="flex flex-col items-start gap-2 mt-1 text-xs text-muted">
           <div>ranked by weighted priority · freq × severity × growth × reg-relevance</div>
-          <div className="flex flex-nowrap items-center gap-1.5 overflow-x-auto no-scrollbar w-full">
-            <span className="flex-shrink-0">severity:</span>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <span>severity:</span>
             {["CRITICAL", "HIGH", "MEDIUM", "LOW"].map((band) => (
-              <span key={band} className="flex-shrink-0"><SeverityBadge band={band} /></span>
+              <span key={band} className="inline-flex items-center gap-1 text-[10px] font-semibold" style={{ color: SEVERITY_HEX[band] }}>
+                <span className="w-1.5 h-1.5 rounded-full" style={{ background: SEVERITY_HEX[band] }} />
+                {band}
+              </span>
             ))}
           </div>
         </div>
